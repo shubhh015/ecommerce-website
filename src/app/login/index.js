@@ -1,3 +1,7 @@
+import FacebookIcon from "@mui/icons-material/Facebook";
+import GoogleIcon from "@mui/icons-material/Google";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import {
     Box,
     Button,
@@ -12,21 +16,43 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import React, { useState } from "react"; // Import useState to manage the password visibility
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Import specific icons from Material Icons
-import FacebookIcon from "@mui/icons-material/Facebook";
-import GoogleIcon from "@mui/icons-material/Google";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { validateEmail } from "../../utils/validation";
 
 const Login = () => {
     const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false); // State for password visibility
+    const [formData, setFormData] = useState({ email: "", password: "" });
+    const [errors, setErrors] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleClickShowPassword = () => {
         setShowPassword((prev) => !prev);
     };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        validateField(name, value);
+    };
+
+    const validateField = (name, value) => {
+        let error = "";
+        if (name === "email" && !validateEmail(value)) {
+            error = "Enter a valid email address.";
+        }
+        if (name === "password") {
+            error =
+                "Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, and one number.";
+        }
+        setErrors((prev) => ({ ...prev, [name]: error }));
+    };
+
+    const isFormValid =
+        !errors.email &&
+        !errors.password &&
+        formData.email &&
+        formData.password;
 
     return (
         <Container
@@ -68,7 +94,11 @@ const Login = () => {
                 <TextField
                     fullWidth
                     label="E-mail"
-                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={!!errors.email}
+                    helperText={errors.email}
                     variant="outlined"
                     sx={{ marginBottom: "1rem" }}
                     required
@@ -76,7 +106,12 @@ const Login = () => {
                 <TextField
                     fullWidth
                     label="Password"
-                    type={showPassword ? "text" : "password"} // Toggle password visibility
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
+                    error={!!errors.password}
+                    helperText="Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, and one number."
                     variant="outlined"
                     sx={{ marginBottom: "1rem" }}
                     InputProps={{
@@ -102,15 +137,12 @@ const Login = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    sx={{
-                        marginBottom: "1rem",
-                        borderRadius: "20px",
-                    }}
+                    disabled={!isFormValid}
+                    sx={{ marginBottom: "1rem", borderRadius: "20px" }}
                 >
                     Sign in
                 </Button>
 
-                {/* Box to hold the links inline */}
                 <Box
                     display="flex"
                     justifyContent="space-between"
@@ -119,12 +151,7 @@ const Login = () => {
                     <Link href="#" variant="body2">
                         Forgot Password?
                     </Link>
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            textAlign: "center",
-                        }}
-                    >
+                    <Typography variant="body2">
                         Don’t have an account?{" "}
                         <Link href="/signup" variant="body2">
                             Sign Up
@@ -133,19 +160,14 @@ const Login = () => {
                 </Box>
                 <Box display="flex" gap={2} alignItems="center" sx={{ my: 4 }}>
                     <Divider sx={{ flex: 1 }} />
-                    <Typography variant="body2" sx={{ textAlign: "center" }}>
-                        Or Continue With
-                    </Typography>
+                    <Typography variant="body2">Or Continue With</Typography>
                     <Divider sx={{ flex: 1 }} />
                 </Box>
                 <Grid container spacing={2} justifyContent="center">
                     <Grid item>
                         <Button
                             color="error"
-                            sx={{
-                                borderRadius: "30px",
-                                paddingY: "1rem",
-                            }}
+                            sx={{ borderRadius: "30px", paddingY: "1rem" }}
                             aria-label="Continue with Google"
                         >
                             <GoogleIcon fontSize="large" />
@@ -154,10 +176,7 @@ const Login = () => {
                     <Grid item>
                         <Button
                             color="primary"
-                            sx={{
-                                borderRadius: "30px",
-                                paddingY: "1rem",
-                            }}
+                            sx={{ borderRadius: "30px", paddingY: "1rem" }}
                             aria-label="Continue with Facebook"
                         >
                             <FacebookIcon fontSize="large" />
