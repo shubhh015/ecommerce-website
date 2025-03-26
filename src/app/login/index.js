@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../redux/authSlice";
 import { validateEmail } from "../../utils/validation";
 
 const Login = () => {
@@ -47,7 +48,10 @@ const Login = () => {
         }
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
-
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        dispatch(login(formData));
+    };
     const isFormValid =
         !errors.email &&
         !errors.password &&
@@ -138,6 +142,7 @@ const Login = () => {
                     color="primary"
                     fullWidth
                     disabled={!isFormValid}
+                    onClick={handleSubmit}
                     sx={{ marginBottom: "1rem", borderRadius: "20px" }}
                 >
                     Sign in
