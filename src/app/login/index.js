@@ -58,10 +58,10 @@ const Login = () => {
         <Container
             maxWidth="sm"
             sx={{
-                marginTop: "5rem",
+                marginY: "2rem",
                 backgroundColor: "#F9FAF9",
                 borderRadius: "8px",
-                padding: "3rem",
+                padding: "2rem",
             }}
         >
             <Typography
@@ -77,6 +77,7 @@ const Login = () => {
                     color: "#054C73",
                     textDecoration: "none",
                     marginBottom: "2rem",
+                    cursor:"pointer"
                 }}
                 onClick={() => navigate("/")}
             >
