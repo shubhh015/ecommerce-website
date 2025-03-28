@@ -17,6 +17,7 @@ import {
     Typography,
 } from "@mui/material";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
     getPasswordHelperMessage,
@@ -37,7 +38,7 @@ const Signup = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+    const dispatch = useDispatch();
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));

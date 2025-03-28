@@ -17,6 +17,7 @@ import {
     Typography,
 } from "@mui/material";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../redux/authSlice";
 import { validateEmail } from "../../utils/validation";
@@ -26,7 +27,7 @@ const Login = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
-
+    const dispatch = useDispatch();
     const handleClickShowPassword = () => {
         setShowPassword((prev) => !prev);
     };
