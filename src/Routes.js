@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import Home from "./app/home";
 import Login from "./app/login";
 import Signup from "./app/signup";
 const routeConfigs = [
@@ -11,6 +12,11 @@ const routeConfigs = [
     {
         path: "/signup",
         RenderComponent: Signup,
+        exact: true,
+    },
+    {
+        path: "/",
+        RenderComponent: Home,
         exact: true,
     },
 ];

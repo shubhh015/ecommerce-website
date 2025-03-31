@@ -17,7 +17,9 @@ import {
     Typography,
 } from "@mui/material";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../redux/authSlice";
 import { validateEmail } from "../../utils/validation";
 
 const Login = () => {
@@ -25,7 +27,7 @@ const Login = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
-
+    const dispatch = useDispatch();
     const handleClickShowPassword = () => {
         setShowPassword((prev) => !prev);
     };
@@ -47,7 +49,10 @@ const Login = () => {
         }
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
-
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        dispatch(login(formData));
+    };
     const isFormValid =
         !errors.email &&
         !errors.password &&
@@ -139,6 +144,7 @@ const Login = () => {
                     color="primary"
                     fullWidth
                     disabled={!isFormValid}
+                    onClick={handleSubmit}
                     sx={{ marginBottom: "1rem", borderRadius: "20px" }}
                 >
                     Sign in
