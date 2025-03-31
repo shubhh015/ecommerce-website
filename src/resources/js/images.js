@@ -6,6 +6,9 @@ import Inspiration1 from "../images/Inspiration1.png";
 import Inspiration2 from "../images/Inspiration2.png";
 import Inspiration3 from "../images/Inspiration3.png";
 import living from "../images/living.png";
+import PurchaseSecurely from "../images/PurchaseSecurely.png";
+import Room from "../images/Room.png";
+import Warehouse from "../images/Warehouse.png";
 export {
     BeautyifyBg,
     bedroom,
@@ -15,4 +18,7 @@ export {
     Inspiration2,
     Inspiration3,
     living,
+    PurchaseSecurely,
+    Room,
+    Warehouse,
 };

@@ -33,16 +33,7 @@ const InspirationCollection = ({ title, description, items }) => {
                         key={index}
                     >
                         <img src={item.img} alt={item.alt} width={"100%"} />
-                        {item.desc && (
-                            <Typography
-                                variant="body1"
-                                align="center"
-                                fontWeight={"600"}
-                                sx={{ my: 2 }}
-                            >
-                                {item.desc}
-                            </Typography>
-                        )}
+                        {item.desc && <Box>{item.desc}</Box>}
                     </Box>
                 ))}
             </Box>
