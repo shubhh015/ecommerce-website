@@ -52,7 +52,7 @@ const BeautifyYourSpace = () => {
                 alt="Beautify Your Space"
                 sx={{
                     borderRadius: "4px",
-                    width: "30%",
+                    width: { xs: "50%", lg: "30%" },
                     height: "auto",
                 }}
             />

@@ -21,6 +21,7 @@ const InspirationCollection = ({ title, description, items }) => {
                 spacing={1}
                 display={"flex"}
                 paddingX={"4rem"}
+                flexWrap={{ xs: "wrap", md: "nowrap" }}
                 justifyContent="center"
                 alignItems={"center"}
                 gap="2rem"

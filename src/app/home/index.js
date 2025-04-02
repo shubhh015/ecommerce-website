@@ -16,6 +16,7 @@ import BeautifyYourSpace from "./BeautifyYourSpace";
 import Features from "./Features";
 import Hero from "./Hero";
 import InspirationCollection from "./InspirationCollection";
+import MailingListForm from "./MailingListForm";
 import NewCollectionSection from "./NewCollectionSection";
 
 const Home = () => {
@@ -184,6 +185,7 @@ const Home = () => {
                 description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
                 items={Steps}
             />
+            <MailingListForm />
         </div>
     );
 };
