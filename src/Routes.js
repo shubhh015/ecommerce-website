@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import AboutUs from "./app/aboutUs";
 import Home from "./app/home";
 import Login from "./app/login";
 import ProductPage from "./app/product";
@@ -23,6 +24,11 @@ const routeConfigs = [
     {
         path: "/products",
         RenderComponent: ProductPage,
+        exact: true,
+    },
+    {
+        path: "/aboutUs",
+        RenderComponent: AboutUs,
         exact: true,
     },
 ];

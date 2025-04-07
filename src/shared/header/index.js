@@ -21,8 +21,8 @@ const pages = [
         path: "/pricing",
     },
     {
-        title: "Blog",
-        path: "/blog",
+        title: "AboutUs",
+        path: "/aboutUs",
     },
     {
         title: "Login",
