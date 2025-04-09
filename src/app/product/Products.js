@@ -1,19 +1,11 @@
 // App.js
 import { Box, Container, Grid, Typography } from "@mui/material";
 import React from "react";
-import { Fabric1, Fabric2, Fabric3 } from "../../resources/js/images";
+import { useSelector } from "react-redux";
 import ProductCard from "./ProductCard";
 import TagList from "./TagList";
-
 const Products = () => {
-    const products = [
-        { title: "Fabric Chair", imageUrl: Fabric1, price: "95.00" },
-        { title: "Fabric Chair", imageUrl: Fabric2, price: "95.00" },
-        { title: "Fabric Chair", imageUrl: Fabric3, price: "95.00" },
-        { title: "Fabric Chair", imageUrl: Fabric1, price: "95.00" },
-        { title: "Fabric Chair", imageUrl: Fabric2, price: "95.00" },
-        { title: "Fabric Chair", imageUrl: Fabric3, price: "95.00" },
-    ];
+    const products = useSelector((state) => state.products.products);
 
     return (
         <Container sx={{ marginY: 2 }}>

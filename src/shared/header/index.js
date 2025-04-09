@@ -1,5 +1,6 @@
 import MenuIcon from "@mui/icons-material/Menu";
-import { Button } from "@mui/material";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import { Badge, Button, Link } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -9,17 +10,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-
 const pages = [
     {
         title: "Products",
         path: "/products",
     },
-    {
-        title: "Pricing",
-        path: "/pricing",
-    },
+
     {
         title: "AboutUs",
         path: "/aboutUs",
@@ -69,7 +67,11 @@ const Header = () => {
             window.removeEventListener("scroll", handleScroll);
         };
     }, [lastScrollY]);
-
+    const cartItems = useSelector((state) => state.cart.cartItems);
+    const totalItems = cartItems.reduce(
+        (total, item) => total + item.quantity,
+        0
+    );
     return (
         <AppBar
             position="fixed"
@@ -192,7 +194,15 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-
+                    <IconButton color="primary" component={Link} to="/cart">
+                        <Badge
+                            badgeContent={totalItems}
+                            color="secondary"
+                            showZero
+                        >
+                            <ShoppingCartOutlinedIcon />
+                        </Badge>
+                    </IconButton>
                     {/* <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton

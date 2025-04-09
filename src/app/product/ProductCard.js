@@ -9,22 +9,29 @@ import {
     Typography,
 } from "@mui/material";
 import React from "react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../redux/cartSlice";
+const ProductCard = ({ id, name, imageUrl, price }) => {
+    const dispatch = useDispatch();
 
-const ProductCard = ({ title, imageUrl, price }) => {
+    const handleAddToCart = () => {
+        dispatch(addToCart({ id, name, price }));
+    };
+
     return (
         <Card sx={{ maxWidth: 345, margin: 2 }}>
             <CardMedia
                 component="img"
                 height="200"
                 image={imageUrl}
-                alt={title}
+                alt={name}
                 sx={{
                     objectFit: "cover",
                 }}
             />
             <CardContent>
                 <Typography variant="h6" fontWeight={"600"} component="div">
-                    {title}
+                    {name}
                 </Typography>
                 <Box
                     display={"flex"}
@@ -34,7 +41,11 @@ const ProductCard = ({ title, imageUrl, price }) => {
                     <Typography variant="body1" color="text.secondary">
                         ${price}
                     </Typography>
-                    <IconButton color="black" sx={{ bgcolor: "#E1E1E1" }}>
+                    <IconButton
+                        onClick={handleAddToCart}
+                        color="black"
+                        sx={{ bgcolor: "#E1E1E1" }}
+                    >
                         <ShoppingCartOutlinedIcon />
                     </IconButton>
                 </Box>
