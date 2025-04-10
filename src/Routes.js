@@ -31,6 +31,11 @@ const routeConfigs = [
         RenderComponent: AboutUs,
         exact: true,
     },
+    {
+        path: "/cart",
+        RenderComponent: AboutUs,
+        exact: true,
+    },
 ];
 export const ScrollToTop = () => {
     const { pathname } = useLocation();
