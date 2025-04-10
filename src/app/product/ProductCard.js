@@ -1,4 +1,6 @@
 // ProductCard.js
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import {
     Box,
@@ -9,13 +11,24 @@ import {
     Typography,
 } from "@mui/material";
 import React from "react";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../../redux/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, removeFromCart } from "../../redux/cartSlice";
+
 const ProductCard = ({ id, name, imageUrl, price }) => {
     const dispatch = useDispatch();
+    const cartItems = useSelector((state) => state.cart.cartItems);
+
+    const productInCart = cartItems.find((item) => item.id === id);
+    const quantity = productInCart ? productInCart.quantity : 0;
 
     const handleAddToCart = () => {
         dispatch(addToCart({ id, name, price }));
+    };
+
+    const handleRemoveFromCart = () => {
+        if (quantity > 0) {
+            dispatch(removeFromCart(id));
+        }
     };
 
     return (
@@ -41,13 +54,34 @@ const ProductCard = ({ id, name, imageUrl, price }) => {
                     <Typography variant="body1" color="text.secondary">
                         ${price}
                     </Typography>
-                    <IconButton
-                        onClick={handleAddToCart}
-                        color="black"
-                        sx={{ bgcolor: "#E1E1E1" }}
-                    >
-                        <ShoppingCartOutlinedIcon />
-                    </IconButton>
+                    {quantity === 0 ? (
+                        <IconButton
+                            onClick={handleAddToCart}
+                            color="primary"
+                            sx={{
+                                bgcolor: "#E1E1E1",
+                                "&:hover": { bgcolor: "#d5d5d5" },
+                            }}
+                        >
+                            <ShoppingCartOutlinedIcon />
+                        </IconButton>
+                    ) : (
+                        <Box display="flex" alignItems="center">
+                            <IconButton
+                                onClick={handleRemoveFromCart}
+                                color="secondary"
+                            >
+                                <RemoveIcon />
+                            </IconButton>
+                            <Typography variant="body1">{quantity}</Typography>
+                            <IconButton
+                                onClick={handleAddToCart}
+                                color="primary"
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        </Box>
+                    )}
                 </Box>
             </CardContent>
         </Card>
