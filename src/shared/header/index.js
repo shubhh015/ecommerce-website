@@ -1,6 +1,6 @@
 import MenuIcon from "@mui/icons-material/Menu";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import { Badge, Button, Link } from "@mui/material";
+import { Badge, Button } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -11,7 +11,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 const pages = [
     {
         title: "Products",
@@ -157,7 +157,7 @@ const Header = () => {
                         variant="h5"
                         noWrap
                         component="a"
-                        href="#app-bar-with-responsive-menu"
+                        href="/"
                         sx={{
                             mr: 2,
                             display: { xs: "flex", md: "none" },
@@ -194,15 +194,17 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-                    <IconButton color="primary" component={Link} to="/cart">
-                        <Badge
-                            badgeContent={totalItems}
-                            color="secondary"
-                            showZero
-                        >
-                            <ShoppingCartOutlinedIcon />
-                        </Badge>
-                    </IconButton>
+                    <Link to="/cart">
+                        <IconButton color="primary">
+                            <Badge
+                                badgeContent={totalItems}
+                                color="secondary"
+                                showZero
+                            >
+                                <ShoppingCartOutlinedIcon />
+                            </Badge>
+                        </IconButton>
+                    </Link>
                     {/* <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton

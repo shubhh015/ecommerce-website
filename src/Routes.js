@@ -4,6 +4,7 @@ import AboutUs from "./app/aboutUs";
 import Home from "./app/home";
 import Login from "./app/login";
 import ProductPage from "./app/product";
+import Cart from "./app/shoppingCart";
 import Signup from "./app/signup";
 const routeConfigs = [
     {
@@ -33,7 +34,7 @@ const routeConfigs = [
     },
     {
         path: "/cart",
-        RenderComponent: AboutUs,
+        RenderComponent: Cart,
         exact: true,
     },
 ];
