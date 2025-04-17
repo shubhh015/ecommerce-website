@@ -221,7 +221,7 @@ const Cart = () => {
                             justifyContent="space-between"
                             mb={1}
                         >
-                            <Typography>Shipping</Typography>
+                            <Typography>Tax</Typography>
                             <Typography>${shippingCost.toFixed(2)}</Typography>
                         </Box>
 

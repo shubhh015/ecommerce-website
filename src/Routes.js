@@ -40,12 +40,14 @@ const routeConfigs = [
         path: "/cart",
         RenderComponent: Cart,
         exact: true,
+        isAuthReq: true,
+        allowed: [ROLE.CONSUMER_USER],
     },
     {
         path: "/profile",
         RenderComponent: Profile,
         exact: true,
-        exact: true,
+
         isAuthReq: true,
         allowed: [ROLE.CONSUMER_USER, ROLE.ADMIN],
     },
@@ -53,7 +55,7 @@ const routeConfigs = [
         path: "/orders",
         RenderComponent: Orders,
         exact: true,
-        exact: true,
+
         isAuthReq: true,
         allowed: [ROLE.CONSUMER_USER],
     },

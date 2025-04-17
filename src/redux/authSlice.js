@@ -22,10 +22,11 @@ export const login = createAsyncThunk(
 
 export const signup = createAsyncThunk(
     "auth/signup",
-    async ({ name, email, password }, { rejectWithValue }) => {
+    async ({ name, phone, email, password }, { rejectWithValue }) => {
         try {
             const response = await axios.post("/auth/signup", {
                 name,
+                phone,
                 email,
                 password,
             });
