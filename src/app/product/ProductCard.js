@@ -22,7 +22,7 @@ const ProductCard = ({ id, name, imageUrl, price }) => {
     const quantity = productInCart ? productInCart.quantity : 0;
 
     const handleAddToCart = () => {
-        dispatch(addToCart({ id, name, price }));
+        dispatch(addToCart({ id, name, price, imageUrl }));
     };
 
     const handleRemoveFromCart = () => {

@@ -17,7 +17,7 @@ import {
     Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../redux/authSlice";
 import { validateEmail } from "../../utils/validation";
@@ -31,7 +31,7 @@ const Login = () => {
     const handleClickShowPassword = () => {
         setShowPassword((prev) => !prev);
     };
-
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -52,6 +52,7 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         dispatch(login(formData));
+        if (isAuthenticated) navigate("/products");
     };
     const isFormValid =
         !errors.email &&
@@ -82,7 +83,7 @@ const Login = () => {
                     color: "#054C73",
                     textDecoration: "none",
                     marginBottom: "2rem",
-                    cursor:"pointer"
+                    cursor: "pointer",
                 }}
                 onClick={() => navigate("/")}
             >

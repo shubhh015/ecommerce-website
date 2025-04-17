@@ -3,9 +3,13 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import AboutUs from "./app/aboutUs";
 import Home from "./app/home";
 import Login from "./app/login";
+import Orders from "./app/orders";
 import ProductPage from "./app/product";
+import Profile from "./app/profile";
 import Cart from "./app/shoppingCart";
 import Signup from "./app/signup";
+import { ROLE } from "./utils/constants/role";
+import ProtectedRoute from "./utils/ProtectedRoute";
 const routeConfigs = [
     {
         path: "/login",
@@ -37,6 +41,22 @@ const routeConfigs = [
         RenderComponent: Cart,
         exact: true,
     },
+    {
+        path: "/profile",
+        RenderComponent: Profile,
+        exact: true,
+        exact: true,
+        isAuthReq: true,
+        allowed: [ROLE.CONSUMER_USER, ROLE.ADMIN],
+    },
+    {
+        path: "/orders",
+        RenderComponent: Orders,
+        exact: true,
+        exact: true,
+        isAuthReq: true,
+        allowed: [ROLE.CONSUMER_USER],
+    },
 ];
 export const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -53,14 +73,23 @@ const AppRoutes = () => {
         <>
             <ScrollToTop />
             <Routes>
-                {routeConfigs.map(({ path, RenderComponent }) => (
-                    <Route
-                        key={path}
-                        path={path}
-                        element={<RenderComponent />}
-                    />
-                ))}
-                {/* <Redirect to={NOT_FOUND} /> */}
+                {routeConfigs.map(
+                    ({ path, RenderComponent, isAuthReq, allowed }) => (
+                        <Route
+                            key={path}
+                            path={path}
+                            element={
+                                isAuthReq ? (
+                                    <ProtectedRoute allowed={allowed}>
+                                        <RenderComponent />
+                                    </ProtectedRoute>
+                                ) : (
+                                    <RenderComponent />
+                                )
+                            }
+                        />
+                    )
+                )}
             </Routes>
         </>
     );

@@ -1,3 +1,4 @@
+import ClearIcon from "@mui/icons-material/Clear";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import {
     Box,
@@ -16,7 +17,6 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeFromCart, updateQuantity } from "../../redux/cartSlice";
-
 const Cart = () => {
     const cartItems = useSelector((state) => state.cart.cartItems);
     const totalPrice = useSelector((state) => state.cart.totalPrice);
@@ -90,7 +90,7 @@ const Cart = () => {
                                             <TableCell>
                                                 <Box
                                                     component="img"
-                                                    src={item.image}
+                                                    src={item.imageUrl}
                                                     alt={item.name}
                                                     sx={{
                                                         width: 80,
@@ -164,8 +164,8 @@ const Cart = () => {
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Button
-                                                    variant="contained"
-                                                    color="secondary"
+                                                    variant="text"
+                                                    color="error"
                                                     onClick={() =>
                                                         dispatch(
                                                             removeFromCart(
@@ -174,7 +174,7 @@ const Cart = () => {
                                                         )
                                                     }
                                                 >
-                                                    Remove
+                                                    <ClearIcon />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -205,7 +205,24 @@ const Cart = () => {
                             fontWeight="medium"
                         >
                             <Typography>Items ({totalItems})</Typography>
+                        </Box>
+
+                        <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            mb={1}
+                        >
+                            <Typography>Subtotal</Typography>
                             <Typography>${totalPrice.toFixed(2)}</Typography>
+                        </Box>
+
+                        <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            mb={1}
+                        >
+                            <Typography>Shipping</Typography>
+                            <Typography>${shippingCost.toFixed(2)}</Typography>
                         </Box>
 
                         <Box
