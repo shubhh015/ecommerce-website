@@ -6,7 +6,10 @@ export const fetchCart = createAsyncThunk(
     "cart/fetchCart",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get("/cart");
+            const token = localStorage.getItem("token");
+            const response = await axios.get("/cart", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             return response.data;
         } catch (err) {
             return rejectWithValue(
@@ -20,10 +23,12 @@ export const addOrUpdateCartItem = createAsyncThunk(
     "cart/addOrUpdateItem",
     async ({ productId, quantity, price, imageUrl }, { rejectWithValue }) => {
         try {
-            const response = await axios.post("/cart/item", {
-                productId,
-                quantity,
-            });
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "/cart/item",
+                { productId, quantity, price, imageUrl },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             return response.data;
         } catch (err) {
             return rejectWithValue(
@@ -37,7 +42,10 @@ export const removeCartItem = createAsyncThunk(
     "cart/removeItem",
     async (productId, { rejectWithValue }) => {
         try {
-            const response = await axios.delete(`/cart/item/${productId}`);
+            const token = localStorage.getItem("token");
+            const response = await axios.delete(`/cart/item/${productId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             return response.data;
         } catch (err) {
             return rejectWithValue(
@@ -51,7 +59,10 @@ export const emptyCart = createAsyncThunk(
     "cart/emptyCart",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.delete("/cart");
+            const token = localStorage.getItem("token");
+            const response = await axios.delete("/cart", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             return response.data;
         } catch (err) {
             return rejectWithValue(
@@ -65,9 +76,12 @@ export const updateShipping = createAsyncThunk(
     "cart/updateShipping",
     async (shippingCost, { rejectWithValue }) => {
         try {
-            const response = await axios.patch("/cart/shipping", {
-                shippingCost,
-            });
+            const token = localStorage.getItem("token");
+            const response = await axios.patch(
+                "/cart/shipping",
+                { shippingCost },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             return response.data;
         } catch (err) {
             return rejectWithValue(
