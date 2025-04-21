@@ -65,10 +65,8 @@ const Header = () => {
         };
     }, [lastScrollY]);
     const cartItems = useSelector((state) => state.cart.cartItems);
-    const totalItems = cartItems.reduce(
-        (total, item) => total + item.quantity,
-        0
-    );
+    const totalItems =
+        cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
     return (
         <AppBar
             position="fixed"
@@ -122,7 +120,10 @@ const Header = () => {
                             {pages.map((page) => (
                                 <MenuItem
                                     key={page}
-                                    onClick={handleCloseNavMenu}
+                                    onClick={() => {
+                                        handleCloseNavMenu();
+                                        navigate(page.path);
+                                    }}
                                 >
                                     <Typography sx={{ textAlign: "center" }}>
                                         {page.title}

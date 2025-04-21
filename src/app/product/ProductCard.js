@@ -1,4 +1,3 @@
-// ProductCard.js
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -12,22 +11,39 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart, removeFromCart } from "../../redux/cartSlice";
+import { addOrUpdateCartItem, removeCartItem } from "../../redux/cartSlice";
 
 const ProductCard = ({ id, name, imageUrl, price }) => {
     const dispatch = useDispatch();
-    const cartItems = useSelector((state) => state.cart.cartItems);
+    const cartItems = useSelector((state) => state.cart.items);
 
-    const productInCart = cartItems.find((item) => item.id === id);
+    const productInCart = cartItems.find(
+        (item) =>
+            item.product === id || item.product?._id === id || item.id === id
+    );
     const quantity = productInCart ? productInCart.quantity : 0;
 
     const handleAddToCart = () => {
-        dispatch(addToCart({ id, name, price, imageUrl }));
+        dispatch(
+            addOrUpdateCartItem({
+                productId: id,
+                quantity: quantity + 1,
+            })
+        );
     };
 
     const handleRemoveFromCart = () => {
-        if (quantity > 0) {
-            dispatch(removeFromCart(id));
+        if (quantity > 1) {
+            dispatch(
+                addOrUpdateCartItem({
+                    productId: id,
+                    quantity: quantity - 1,
+                    price,
+                    imageUrl,
+                })
+            );
+        } else if (quantity === 1) {
+            dispatch(removeCartItem(id));
         }
     };
 
@@ -38,18 +54,16 @@ const ProductCard = ({ id, name, imageUrl, price }) => {
                 height="200"
                 image={imageUrl}
                 alt={name}
-                sx={{
-                    objectFit: "cover",
-                }}
+                sx={{ objectFit: "cover" }}
             />
             <CardContent>
-                <Typography variant="h6" fontWeight={"600"} component="div">
+                <Typography variant="h6" fontWeight={600} component="div">
                     {name}
                 </Typography>
                 <Box
-                    display={"flex"}
-                    justifyContent={"space-between"}
-                    alignItems={"center"}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
                 >
                     <Typography variant="body1" color="text.secondary">
                         ${price}

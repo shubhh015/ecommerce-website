@@ -22,8 +22,9 @@ const PerfectHarmony = () => {
                 <Box
                     display={"flex"}
                     gap={"4rem"}
-                    justifyContent={"space-between"}
+                    justifyContent={{ sm: "center", lg: "space-between" }}
                     alignItems={"center"}
+                    flexWrap={{ sm: "wrap", lg: "nowrap" }}
                 >
                     <Box>
                         <Typography
@@ -39,6 +40,7 @@ const PerfectHarmony = () => {
                             variant="body1"
                             gutterBottom
                             color="#666666"
+                            textAlign={"center"}
                         >
                             Explore furniture that harmoniously combines comfort
                             and style to elevate your home
@@ -46,7 +48,10 @@ const PerfectHarmony = () => {
                         <Box
                             display={"flex"}
                             alignItems={"center"}
+                            justifyItems={"center"}
                             marginTop={3}
+                            textAlign={"center"}
+                            width={"100%"}
                         >
                             <Button
                                 variant="outlined"

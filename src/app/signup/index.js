@@ -75,12 +75,19 @@ const Signup = () => {
         }
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch(signup(formData));
-        if (isAuthenticated) navigate("/products");
+        try {
+            const result = await dispatch(signup(formData));
+            if (signup.fulfilled.match(result)) {
+                navigate("/products");
+            } else {
+                console.error("Signup failed");
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+        }
     };
-
     const hasErrors =
         Object.values(errors).some((error) => error.length > 0) ||
         Object.values(formData).some((value) => value.length === 0);

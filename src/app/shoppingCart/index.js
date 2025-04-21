@@ -16,18 +16,35 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { removeFromCart, updateQuantity } from "../../redux/cartSlice";
+import { Link } from "react-router-dom";
+import { addOrUpdateCartItem, removeCartItem } from "../../redux/cartSlice";
+
 const Cart = () => {
-    const cartItems = useSelector((state) => state.cart.cartItems);
-    const totalPrice = useSelector((state) => state.cart.totalPrice);
+    const cartItems = useSelector((state) => state.cart.items);
+    const totalPrice = useSelector((state) => state.cart.subTotal);
     const dispatch = useDispatch();
 
     const [promoCode, setPromoCode] = useState("");
     const [shippingCost, setShippingCost] = useState(5);
 
-    const handleQuantityChange = (itemId, newQuantity) => {
+    const handleQuantityChange = (item, newQuantity) => {
         if (newQuantity < 1) return;
-        dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+        // item.product may be an object or an id string
+        const productId = item.product?._id || item.product || item.id;
+        dispatch(
+            addOrUpdateCartItem({
+                productId,
+                quantity: newQuantity,
+                price: item.price,
+                imageUrl: item.imageUrl,
+            })
+        );
+    };
+
+    const handleRemove = (item) => {
+        // item.product may be an object or an id string
+        const productId = item.product?._id || item.product || item.id;
+        dispatch(removeCartItem(productId));
     };
 
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -54,7 +71,6 @@ const Cart = () => {
                     flexDirection={{ md: "column", lg: "row" }}
                     mb={3}
                 >
-                    {/* Left side: Cart Items in Table */}
                     <Box flex={2} mr={4} minWidth={300} mb={3}>
                         <TableContainer>
                             <Table>
@@ -63,9 +79,7 @@ const Cart = () => {
                                         <TableCell></TableCell>
                                         <TableCell
                                             align="center"
-                                            sx={{
-                                                textWrap: "nowrap",
-                                            }}
+                                            sx={{ textWrap: "nowrap" }}
                                         >
                                             Product Details
                                         </TableCell>
@@ -83,10 +97,15 @@ const Cart = () => {
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
-
                                 <TableBody>
                                     {cartItems.map((item) => (
-                                        <TableRow key={item.id}>
+                                        <TableRow
+                                            key={
+                                                item.product?._id ||
+                                                item.product ||
+                                                item.id
+                                            }
+                                        >
                                             <TableCell>
                                                 <Box
                                                     component="img"
@@ -103,17 +122,19 @@ const Cart = () => {
                                                 <Typography fontWeight="bold">
                                                     {item.name}
                                                 </Typography>
+                                                {item.platform && (
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                    >
+                                                        {item.platform}
+                                                    </Typography>
+                                                )}
                                                 <Typography
                                                     variant="body2"
                                                     color="text.secondary"
                                                 >
-                                                    {item.platform}
-                                                </Typography>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    ${item.price.toFixed(2)}
+                                                    ${item.price?.toFixed(2)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -127,7 +148,7 @@ const Cart = () => {
                                                         variant="outlined"
                                                         onClick={() =>
                                                             handleQuantityChange(
-                                                                item.id,
+                                                                item,
                                                                 item.quantity -
                                                                     1
                                                             )
@@ -143,7 +164,7 @@ const Cart = () => {
                                                         variant="outlined"
                                                         onClick={() =>
                                                             handleQuantityChange(
-                                                                item.id,
+                                                                item,
                                                                 item.quantity +
                                                                     1
                                                             )
@@ -154,7 +175,7 @@ const Cart = () => {
                                                 </Box>
                                             </TableCell>
                                             <TableCell align="right">
-                                                ${item.price.toFixed(2)}
+                                                ${item.price?.toFixed(2)}
                                             </TableCell>
                                             <TableCell align="right">
                                                 $
@@ -167,11 +188,7 @@ const Cart = () => {
                                                     variant="text"
                                                     color="error"
                                                     onClick={() =>
-                                                        dispatch(
-                                                            removeFromCart(
-                                                                item.id
-                                                            )
-                                                        )
+                                                        handleRemove(item)
                                                     }
                                                 >
                                                     <ClearIcon />
@@ -183,7 +200,6 @@ const Cart = () => {
                             </Table>
                         </TableContainer>
                     </Box>
-
                     <Box
                         flex={1}
                         sx={{
@@ -197,7 +213,6 @@ const Cart = () => {
                         <Typography variant="h6" gutterBottom>
                             Order Summary
                         </Typography>
-
                         <Box
                             display="flex"
                             justifyContent="space-between"
@@ -206,7 +221,6 @@ const Cart = () => {
                         >
                             <Typography>Items ({totalItems})</Typography>
                         </Box>
-
                         <Box
                             display="flex"
                             justifyContent="space-between"
@@ -215,7 +229,6 @@ const Cart = () => {
                             <Typography>Subtotal</Typography>
                             <Typography>${totalPrice.toFixed(2)}</Typography>
                         </Box>
-
                         <Box
                             display="flex"
                             justifyContent="space-between"
@@ -224,7 +237,6 @@ const Cart = () => {
                             <Typography>Tax</Typography>
                             <Typography>${shippingCost.toFixed(2)}</Typography>
                         </Box>
-
                         <Box
                             my={2}
                             sx={{ display: "flex", alignItems: "center" }}
@@ -246,9 +258,7 @@ const Cart = () => {
                                 APPLY
                             </Button>
                         </Box>
-
                         <Divider sx={{ mb: 2 }} />
-
                         <Box
                             display="flex"
                             justifyContent="space-between"
@@ -259,7 +269,6 @@ const Cart = () => {
                                 ${(totalPrice + shippingCost).toFixed(2)}
                             </Typography>
                         </Box>
-
                         <Button
                             variant="contained"
                             color="primary"
@@ -272,9 +281,9 @@ const Cart = () => {
                     </Box>
                 </Box>
             )}
-            <Button variant="text" sx={{ mt: 2 }} href="/products">
+            <Link variant="text" sx={{ mt: 2 }} to="/products">
                 &larr; Continue Shopping
-            </Button>
+            </Link>
         </Container>
     );
 };

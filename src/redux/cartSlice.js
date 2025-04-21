@@ -1,51 +1,131 @@
-import { createSlice } from "@reduxjs/toolkit";
+// cartSlice.js
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "../utils/api/axios";
+
+export const fetchCart = createAsyncThunk(
+    "cart/fetchCart",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get("/cart");
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Failed to fetch cart"
+            );
+        }
+    }
+);
+
+export const addOrUpdateCartItem = createAsyncThunk(
+    "cart/addOrUpdateItem",
+    async ({ productId, quantity, price, imageUrl }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post("/cart/item", {
+                productId,
+                quantity,
+            });
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Failed to update cart"
+            );
+        }
+    }
+);
+
+export const removeCartItem = createAsyncThunk(
+    "cart/removeItem",
+    async (productId, { rejectWithValue }) => {
+        try {
+            const response = await axios.delete(`/cart/item/${productId}`);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Failed to remove item"
+            );
+        }
+    }
+);
+
+export const emptyCart = createAsyncThunk(
+    "cart/emptyCart",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.delete("/cart");
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Failed to empty cart"
+            );
+        }
+    }
+);
+
+export const updateShipping = createAsyncThunk(
+    "cart/updateShipping",
+    async (shippingCost, { rejectWithValue }) => {
+        try {
+            const response = await axios.patch("/cart/shipping", {
+                shippingCost,
+            });
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Failed to update shipping"
+            );
+        }
+    }
+);
 
 const initialState = {
-    cartItems: [],
-    totalPrice: 0,
+    items: [],
+    subTotal: 0,
+    shippingCost: 0,
+    status: "idle",
+    error: null,
 };
 
 const cartSlice = createSlice({
     name: "cart",
     initialState,
-    reducers: {
-        addToCart: (state, action) => {
-            const item = action.payload;
-            const existingItem = state.cartItems.find((i) => i.id === item.id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                state.cartItems.push({ ...item, quantity: 1 });
-            }
-            state.totalPrice = state.cartItems.reduce(
-                (total, item) => total + item.price * item.quantity,
-                0
-            );
-        },
-        removeFromCart: (state, action) => {
-            const itemId = action.payload;
-            state.cartItems = state.cartItems.filter(
-                (item) => item.id !== itemId
-            );
-            state.totalPrice = state.cartItems.reduce(
-                (total, item) => total + item.price * item.quantity,
-                0
-            );
-        },
-        updateQuantity: (state, action) => {
-            const { id, quantity } = action.payload;
-            const item = state.cartItems.find((item) => item.id === id);
-            if (item && quantity > 0) {
-                item.quantity = quantity;
-            }
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
 
-            state.totalPrice = state.cartItems.reduce(
-                (total, item) => total + item.price * item.quantity,
-                0
-            );
-        },
+            .addCase(fetchCart.pending, (state) => {
+                state.status = "loading";
+            })
+            .addCase(fetchCart.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                state.items = action.payload.items;
+                state.subTotal = action.payload.subTotal;
+                state.shippingCost = action.payload.shippingCost;
+            })
+            .addCase(fetchCart.rejected, (state, action) => {
+                state.status = "failed";
+                state.error = action.payload;
+            })
+
+            .addCase(addOrUpdateCartItem.fulfilled, (state, action) => {
+                state.items = action.payload.items;
+                state.subTotal = action.payload.subTotal;
+            })
+
+            .addCase(removeCartItem.fulfilled, (state, action) => {
+                state.items = action.payload.items;
+                state.subTotal = action.payload.subTotal;
+            })
+
+            .addCase(emptyCart.fulfilled, (state) => {
+                state.items = [];
+                state.subTotal = 0;
+                state.shippingCost = 0;
+            })
+
+            .addCase(updateShipping.fulfilled, (state, action) => {
+                state.shippingCost = action.payload.shippingCost;
+            });
     },
 });
 
-export const { addToCart, removeFromCart, updateQuantity } = cartSlice.actions;
 export default cartSlice.reducer;

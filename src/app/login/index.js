@@ -53,10 +53,18 @@ const Login = () => {
         }
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch(login(formData));
-        navigate("/products");
+        try {
+            const resultAction = await dispatch(login(formData));
+            if (login.fulfilled.match(resultAction)) {
+                navigate("/products");
+            } else {
+                console.error("Login failed");
+            }
+        } catch (err) {
+            console.error("Login error: ", err);
+        }
     };
     const isFormValid =
         !errors.email &&
