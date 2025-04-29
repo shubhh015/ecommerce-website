@@ -18,18 +18,69 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { addOrUpdateCartItem, removeCartItem } from "../../redux/cartSlice";
+import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
 
 const Cart = () => {
     const cartItems = useSelector((state) => state.cart.items);
     const totalPrice = useSelector((state) => state.cart.subTotal);
     const dispatch = useDispatch();
+    const user = useSelector((state) => state.user);
 
+    const openRazorpayCheckout = async () => {
+        const amountInPaise = Math.round((totalPrice + shippingCost) * 100);
+
+        const resultAction = await dispatch(
+            createOrder({
+                amount: amountInPaise / 100,
+                currency: "INR",
+                receipt: "receipt#123",
+                products: cartItems,
+            })
+        );
+
+        if (createOrder.fulfilled.match(resultAction)) {
+            const orderData = resultAction.payload;
+
+            const options = {
+                key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+                amount: orderData.razorpayOrder.amount,
+                currency: orderData.razorpayOrder.currency,
+                name: "Furniture",
+                description: "Style your home in your style",
+                order_id: orderData.razorpayOrder.id,
+                handler: function (response) {
+                    alert(
+                        "Payment successful: " + response.razorpay_payment_id
+                    );
+                    dispatch(setPaymentStatus("success"));
+                },
+                prefill: {
+                    name: user?.name || "",
+                    email: user?.email || "",
+                    contact: user?.phone || "",
+                },
+                theme: {
+                    color: "#3399cc",
+                },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+
+            rzp.on("payment.failed", function (response) {
+                alert("Payment failed: " + response.error.description);
+                dispatch(setPaymentStatus("failed"));
+            });
+        } else {
+            alert("Failed to create order. Try again later.");
+        }
+    };
     const [promoCode, setPromoCode] = useState("");
     const [shippingCost, setShippingCost] = useState(5);
 
     const handleQuantityChange = (item, newQuantity) => {
         if (newQuantity < 1) return;
-        // item.product may be an object or an id string
+
         const productId = item.product?._id || item.product || item.id;
         dispatch(
             addOrUpdateCartItem({
@@ -42,7 +93,6 @@ const Cart = () => {
     };
 
     const handleRemove = (item) => {
-        // item.product may be an object or an id string
         const productId = item.product?._id || item.product || item.id;
         dispatch(removeCartItem(productId));
     };
@@ -99,18 +149,18 @@ const Cart = () => {
                                 </TableHead>
                                 <TableBody>
                                     {cartItems.map((item) => (
-                                        <TableRow
-                                            key={
-                                                item.product?._id ||
-                                                item.product ||
-                                                item.id
-                                            }
-                                        >
+                                        <TableRow key={item.product?._id}>
                                             <TableCell>
                                                 <Box
                                                     component="img"
-                                                    src={item.imageUrl}
-                                                    alt={item.name}
+                                                    src={
+                                                        item?.product?.image
+                                                            ?.url
+                                                    }
+                                                    alt={
+                                                        item?.product?.image
+                                                            ?.alt
+                                                    }
                                                     sx={{
                                                         width: 80,
                                                         height: 80,
@@ -120,7 +170,7 @@ const Cart = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Typography fontWeight="bold">
-                                                    {item.name}
+                                                    {item?.product?.name}
                                                 </Typography>
                                                 {item.platform && (
                                                     <Typography
@@ -274,7 +324,7 @@ const Cart = () => {
                             color="primary"
                             fullWidth
                             sx={{ mt: 3 }}
-                            onClick={() => alert("Proceeding to checkout")}
+                            onClick={openRazorpayCheckout}
                         >
                             CHECKOUT
                         </Button>

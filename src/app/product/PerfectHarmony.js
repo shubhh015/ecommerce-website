@@ -24,7 +24,7 @@ const PerfectHarmony = () => {
                     gap={"4rem"}
                     justifyContent={{ sm: "center", lg: "space-between" }}
                     alignItems={"center"}
-                    flexWrap={{ sm: "wrap", lg: "nowrap" }}
+                    flexWrap={{ xs: "wrap", lg: "nowrap" }}
                 >
                     <Box>
                         <Typography
@@ -99,7 +99,12 @@ const PerfectHarmony = () => {
                 <Box
                     sx={{
                         marginTop: 4,
-                        display: { sm: "none", md: "none", lg: "flex" },
+                        display: {
+                            xs: "none",
+                            sm: "none",
+                            md: "none",
+                            lg: "flex",
+                        },
                         alignItems: "center",
                         backgroundColor: "white",
                         paddingY: 2,

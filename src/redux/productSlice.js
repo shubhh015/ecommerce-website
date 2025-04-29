@@ -1,67 +1,30 @@
-// productSlice.js
-import { createSlice } from "@reduxjs/toolkit";
-import {
-    Fabric1,
-    Fabric2,
-    Fabric3,
-    Sofa1,
-    TableImg,
-} from "../resources/js/images";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "../utils/api/axios";
+
+export const fetchProducts = createAsyncThunk(
+    "products/fetchProducts",
+    async ({ keyword = "", category = "" }, thunkAPI) => {
+        try {
+            const params = {};
+            if (keyword) params.keyword = keyword;
+            if (category) params.category = category;
+
+            const response = await axios.get("/products", {
+                params,
+            });
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
 
 const initialState = {
-    products: [
-        {
-            id: 1,
-            name: "Sofa",
-            price: 20000,
-            category: "Furniture",
-            stock: 10,
-            imageUrl: Sofa1,
-        },
-        {
-            id: 2,
-            name: "Dining Table",
-            price: 30000,
-            category: "Furniture",
-            stock: 5,
-            imageUrl: TableImg,
-        },
-        {
-            id: 3,
-            name: "Fabric Chair",
-            price: 95.0,
-            category: "Furniture",
-            stock: 20,
-            imageUrl: Fabric1,
-        },
-        {
-            id: 4,
-            name: "Fabric Chair",
-            price: 95.0,
-            category: "Furniture",
-            stock: 20,
-            imageUrl: Fabric2,
-        },
-        {
-            id: 5,
-            name: "Fabric Chair",
-            price: 95.0,
-            category: "Furniture",
-            stock: 20,
-            imageUrl: Fabric3,
-        },
-
-        {
-            id: 7,
-            name: "Sofa",
-            price: 95.0,
-            category: "Furniture",
-            stock: 20,
-            imageUrl: Fabric2,
-        },
-    ],
-    categories: ["Furniture", "Electronics", "Clothing"],
+    products: [],
+    categories: ["Best Seller", "Chair", "Table", "Bed", "Closet"],
     searchQuery: "",
+    loading: false,
+    error: null,
 };
 
 const productSlice = createSlice({
@@ -71,6 +34,22 @@ const productSlice = createSlice({
         setSearchQuery: (state, action) => {
             state.searchQuery = action.payload;
         },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchProducts.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchProducts.fulfilled, (state, action) => {
+                state.products = action.payload;
+                state.loading = false;
+            })
+            .addCase(fetchProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error =
+                    action.payload?.message || "Failed to fetch products";
+            });
     },
 });
 

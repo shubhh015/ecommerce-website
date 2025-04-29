@@ -64,7 +64,7 @@ const Header = () => {
             window.removeEventListener("scroll", handleScroll);
         };
     }, [lastScrollY]);
-    const cartItems = useSelector((state) => state.cart.cartItems);
+    const cartItems = useSelector((state) => state.cart.items);
     const totalItems =
         cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
     return (

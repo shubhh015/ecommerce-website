@@ -6,7 +6,8 @@ const Options = ({ furnitureItems }) => {
         <Container sx={{ marginY: 3 }}>
             <Box
                 display={"flex"}
-                justifyContent={"space-between"}
+                flexWrap={{ xs: "wrap", lg: "nowrap" }}
+                justifyContent={{ xs: "center", lg: "space-between" }}
                 alignItems={"stretch"}
                 gap={3}
             >
@@ -17,6 +18,8 @@ const Options = ({ furnitureItems }) => {
                             alignItems: "center",
                             gap: "2rem",
                         }}
+                        justifyContent={{ xs: "center", lg: "initial" }}
+                        flexWrap={{ xs: "wrap", lg: "nowrap" }}
                         key={index}
                         bgcolor={"#F2F5FF"}
                         borderRadius={3}
@@ -54,7 +57,7 @@ const Options = ({ furnitureItems }) => {
                             <img
                                 src={item.imageUrl}
                                 alt={item.title}
-                                width={"80%"}
+                                width={150}
                             />
                         </Box>
                     </Box>

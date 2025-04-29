@@ -11,39 +11,32 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addOrUpdateCartItem, removeCartItem } from "../../redux/cartSlice";
+import {
+    addOrUpdateCartItem,
+    fetchCart,
+    removeCartItem,
+} from "../../redux/cartSlice";
 
-const ProductCard = ({ id, name, imageUrl, price }) => {
+const ProductCard = ({ _id, name, image, price }) => {
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
 
-    const productInCart = cartItems.find(
-        (item) =>
-            item.product === id || item.product?._id === id || item.id === id
-    );
+    const productInCart = cartItems.find((item) => item.product?._id === _id);
     const quantity = productInCart ? productInCart.quantity : 0;
-
+    const isActive = productInCart?.isActive ?? true;
     const handleAddToCart = () => {
         dispatch(
-            addOrUpdateCartItem({
-                productId: id,
-                quantity: quantity + 1,
-            })
-        );
+            addOrUpdateCartItem({ productId: _id, quantity: quantity + 1 })
+        ).then(() => dispatch(fetchCart()));
     };
 
     const handleRemoveFromCart = () => {
         if (quantity > 1) {
             dispatch(
-                addOrUpdateCartItem({
-                    productId: id,
-                    quantity: quantity - 1,
-                    price,
-                    imageUrl,
-                })
-            );
+                addOrUpdateCartItem({ productId: _id, quantity: quantity - 1 })
+            ).then(() => dispatch(fetchCart()));
         } else if (quantity === 1) {
-            dispatch(removeCartItem(id));
+            dispatch(removeCartItem(_id));
         }
     };
 
@@ -52,8 +45,8 @@ const ProductCard = ({ id, name, imageUrl, price }) => {
             <CardMedia
                 component="img"
                 height="200"
-                image={imageUrl}
-                alt={name}
+                image={image?.url}
+                alt={image?.alt}
                 sx={{ objectFit: "cover" }}
             />
             <CardContent>
@@ -68,7 +61,16 @@ const ProductCard = ({ id, name, imageUrl, price }) => {
                     <Typography variant="body1" color="text.secondary">
                         ${price}
                     </Typography>
-                    {quantity === 0 ? (
+                    {!isActive ? (
+                        <Typography
+                            variant="body2"
+                            color="error"
+                            fontWeight={600}
+                            sx={{ ml: 2 }}
+                        >
+                            Out of Stock
+                        </Typography>
+                    ) : quantity === 0 ? (
                         <IconButton
                             onClick={handleAddToCart}
                             color="primary"

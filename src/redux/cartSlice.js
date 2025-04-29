@@ -21,12 +21,12 @@ export const fetchCart = createAsyncThunk(
 
 export const addOrUpdateCartItem = createAsyncThunk(
     "cart/addOrUpdateItem",
-    async ({ productId, quantity, price, imageUrl }, { rejectWithValue }) => {
+    async ({ productId, quantity }, { rejectWithValue }) => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.post(
                 "/cart/item",
-                { productId, quantity, price, imageUrl },
+                { productId, quantity },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             return response.data;
@@ -67,6 +67,22 @@ export const emptyCart = createAsyncThunk(
         } catch (err) {
             return rejectWithValue(
                 err.response?.data?.message || "Failed to empty cart"
+            );
+        }
+    }
+);
+export const fetchCartItemByProductId = createAsyncThunk(
+    "cart/fetchCartItemByProductId",
+    async (productId, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get(`/cart/item/${productId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            return { productId, cartItem: response.data };
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Failed to fetch cart item"
             );
         }
     }
@@ -129,7 +145,17 @@ const cartSlice = createSlice({
                 state.items = action.payload.items;
                 state.subTotal = action.payload.subTotal;
             })
-
+            .addCase(fetchCartItemByProductId.fulfilled, (state, action) => {
+                const { productId, cartItem } = action.payload;
+                const index = state.items.findIndex(
+                    (item) => item.product._id === productId
+                );
+                if (index > -1) {
+                    state.items[index] = cartItem;
+                } else {
+                    state.items.push(cartItem);
+                }
+            })
             .addCase(emptyCart.fulfilled, (state) => {
                 state.items = [];
                 state.subTotal = 0;

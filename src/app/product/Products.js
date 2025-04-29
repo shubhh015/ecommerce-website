@@ -1,11 +1,18 @@
-// App.js
 import { Box, Container, Grid, Typography } from "@mui/material";
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { fetchProducts } from "../../redux/productSlice";
 import ProductCard from "./ProductCard";
 import TagList from "./TagList";
+
 const Products = () => {
-    const products = useSelector((state) => state.products.products);
+    const dispatch = useDispatch();
+    const { products, loading, error } = useSelector((state) => state.products);
+
+    useEffect(() => {
+        dispatch(fetchProducts({ category: "Best Seller" }));
+    }, [dispatch]);
 
     return (
         <Container sx={{ marginY: 2 }}>
@@ -37,16 +44,27 @@ const Products = () => {
                         Crafted with excellent material
                     </Typography>
                 </Box>
+
                 <Box>
                     <TagList />
                 </Box>
             </Box>
-            <Grid container spacing={2}>
-                {products.map((product, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
-                        <ProductCard {...product} />
-                    </Grid>
-                ))}
+
+            {loading && <Typography>Loading products...</Typography>}
+            {error && <Typography color="error">Error: {error}</Typography>}
+
+            <Grid
+                container
+                spacing={2}
+                justifyContent={{ xs: "center", lg: "initial" }}
+            >
+                {!loading &&
+                    !error &&
+                    products.map((product) => (
+                        <Grid item xs={12} sm={6} md={4} key={product._id}>
+                            <ProductCard {...product} />
+                        </Grid>
+                    ))}
             </Grid>
         </Container>
     );
