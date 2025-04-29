@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import AboutUs from "./app/aboutUs";
+import AdminDashboard from "./app/admin";
 import Home from "./app/home";
 import Login from "./app/login";
 import Orders from "./app/orders";
@@ -58,6 +59,13 @@ const routeConfigs = [
 
         isAuthReq: true,
         allowed: [ROLE.CONSUMER_USER],
+    },
+    {
+        path: "/admin/Dashboard",
+        RenderComponent: AdminDashboard,
+        exact: true,
+        isAuthReq: true,
+        allowed: [ROLE.ADMIN],
     },
 ];
 export const ScrollToTop = () => {

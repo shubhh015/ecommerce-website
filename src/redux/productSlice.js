@@ -8,11 +8,45 @@ export const fetchProducts = createAsyncThunk(
             const params = {};
             if (keyword) params.keyword = keyword;
             if (category) params.category = category;
-
-            const response = await axios.get("/products", {
-                params,
-            });
+            const response = await axios.get("/products", { params });
             return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const addProduct = createAsyncThunk(
+    "products/addProduct",
+    async (productData, thunkAPI) => {
+        try {
+            const response = await axios.post("/products", productData);
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const updateProduct = createAsyncThunk(
+    "products/updateProduct",
+    async ({ id, updates }, thunkAPI) => {
+        try {
+            const response = await axios.put(`/products/${id}`, updates);
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
+// Delete product
+export const deleteProduct = createAsyncThunk(
+    "products/deleteProduct",
+    async (id, thunkAPI) => {
+        try {
+            await axios.delete(`/products/${id}`);
+            return id;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response.data);
         }
@@ -49,6 +83,23 @@ const productSlice = createSlice({
                 state.loading = false;
                 state.error =
                     action.payload?.message || "Failed to fetch products";
+            })
+
+            .addCase(addProduct.fulfilled, (state, action) => {
+                state.products.push(action.payload);
+            })
+
+            .addCase(updateProduct.fulfilled, (state, action) => {
+                const idx = state.products.findIndex(
+                    (p) => p._id === action.payload._id
+                );
+                if (idx !== -1) state.products[idx] = action.payload;
+            })
+
+            .addCase(deleteProduct.fulfilled, (state, action) => {
+                state.products = state.products.filter(
+                    (p) => p._id !== action.payload
+                );
             });
     },
 });
