@@ -14,16 +14,24 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { addOrUpdateCartItem, removeCartItem } from "../../redux/cartSlice";
+import {
+    addOrUpdateCartItem,
+    emptyCart,
+    fetchCart,
+    removeCartItem,
+} from "../../redux/cartSlice";
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
 
 const Cart = () => {
     const cartItems = useSelector((state) => state.cart.items);
     const totalPrice = useSelector((state) => state.cart.subTotal);
     const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(fetchCart());
+    }, [dispatch]);
     const user = useSelector((state) => state.user);
 
     const openRazorpayCheckout = async () => {
@@ -43,16 +51,18 @@ const Cart = () => {
 
             const options = {
                 key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+                mode: "test",
                 amount: orderData.razorpayOrder.amount,
                 currency: orderData.razorpayOrder.currency,
                 name: "Furniture",
-                description: "Style your home in your style",
+                description: "Test Transaction",
                 order_id: orderData.razorpayOrder.id,
                 handler: function (response) {
                     alert(
                         "Payment successful: " + response.razorpay_payment_id
                     );
                     dispatch(setPaymentStatus("success"));
+                    dispatch(emptyCart());
                 },
                 prefill: {
                     name: user?.name || "",
@@ -81,19 +91,16 @@ const Cart = () => {
     const handleQuantityChange = (item, newQuantity) => {
         if (newQuantity < 1) return;
 
-        const productId = item.product?._id || item.product || item.id;
         dispatch(
             addOrUpdateCartItem({
-                productId,
+                product: item?.product,
                 quantity: newQuantity,
-                price: item.price,
-                imageUrl: item.imageUrl,
             })
-        );
+        ).then(() => dispatch(fetchCart()));
     };
 
     const handleRemove = (item) => {
-        const productId = item.product?._id || item.product || item.id;
+        const productId = item.product?._id;
         dispatch(removeCartItem(productId));
     };
 

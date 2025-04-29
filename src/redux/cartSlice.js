@@ -21,12 +21,12 @@ export const fetchCart = createAsyncThunk(
 
 export const addOrUpdateCartItem = createAsyncThunk(
     "cart/addOrUpdateItem",
-    async ({ productId, quantity }, { rejectWithValue }) => {
+    async ({ product, quantity }, { rejectWithValue }) => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.post(
                 "/cart/item",
-                { productId, quantity },
+                { product, quantity },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             return response.data;

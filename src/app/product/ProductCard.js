@@ -17,26 +17,34 @@ import {
     removeCartItem,
 } from "../../redux/cartSlice";
 
-const ProductCard = ({ _id, name, image, price }) => {
+const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
 
-    const productInCart = cartItems.find((item) => item.product?._id === _id);
+    const productInCart = cartItems.find(
+        (item) => item.product?._id === product?._id
+    );
     const quantity = productInCart ? productInCart.quantity : 0;
-    const isActive = productInCart?.isActive ?? true;
+    const isActive = product?.isActive ?? true;
     const handleAddToCart = () => {
         dispatch(
-            addOrUpdateCartItem({ productId: _id, quantity: quantity + 1 })
+            addOrUpdateCartItem({
+                product: product,
+                quantity: quantity + 1,
+            })
         ).then(() => dispatch(fetchCart()));
     };
 
     const handleRemoveFromCart = () => {
         if (quantity > 1) {
             dispatch(
-                addOrUpdateCartItem({ productId: _id, quantity: quantity - 1 })
+                addOrUpdateCartItem({
+                    product: product,
+                    quantity: quantity - 1,
+                })
             ).then(() => dispatch(fetchCart()));
         } else if (quantity === 1) {
-            dispatch(removeCartItem(_id));
+            dispatch(removeCartItem(product?._id));
         }
     };
 
@@ -45,13 +53,13 @@ const ProductCard = ({ _id, name, image, price }) => {
             <CardMedia
                 component="img"
                 height="200"
-                image={image?.url}
-                alt={image?.alt}
+                image={product?.image?.url}
+                alt={product?.image?.alt}
                 sx={{ objectFit: "cover" }}
             />
             <CardContent>
                 <Typography variant="h6" fontWeight={600} component="div">
-                    {name}
+                    {product?.name}
                 </Typography>
                 <Box
                     display="flex"
@@ -59,7 +67,7 @@ const ProductCard = ({ _id, name, image, price }) => {
                     alignItems="center"
                 >
                     <Typography variant="body1" color="text.secondary">
-                        ${price}
+                        ${product?.price}
                     </Typography>
                     {!isActive ? (
                         <Typography

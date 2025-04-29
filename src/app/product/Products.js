@@ -2,6 +2,7 @@ import { Box, Container, Grid, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { fetchCart } from "../../redux/cartSlice";
 import { fetchProducts } from "../../redux/productSlice";
 import ProductCard from "./ProductCard";
 import TagList from "./TagList";
@@ -13,7 +14,9 @@ const Products = () => {
     useEffect(() => {
         dispatch(fetchProducts({ category: "Best Seller" }));
     }, [dispatch]);
-
+    useEffect(() => {
+        dispatch(fetchCart());
+    }, [dispatch]);
     return (
         <Container sx={{ marginY: 2 }}>
             <Box
@@ -62,7 +65,7 @@ const Products = () => {
                     !error &&
                     products.map((product) => (
                         <Grid item xs={12} sm={6} md={4} key={product._id}>
-                            <ProductCard {...product} />
+                            <ProductCard product={product} />
                         </Grid>
                     ))}
             </Grid>
