@@ -11,8 +11,9 @@ import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { fetchProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
 const Header = () => {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -23,8 +24,13 @@ const Header = () => {
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
     };
+    const dispatch = useDispatch();
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-    const { user } = useSelector((state) => state.auth);
+    const user = useSelector((state) => state.profile?.user);
+
+    React.useEffect(() => {
+        dispatch(fetchProfile());
+    }, [dispatch]);
 
     const pages = React.useMemo(() => {
         if (user?.role === ROLE.ADMIN) {

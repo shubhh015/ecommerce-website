@@ -20,6 +20,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../redux/authSlice";
+import { fetchProfile } from "../../redux/profileSlice";
 import {
     getPasswordHelperMessage,
     validateEmail,
@@ -58,6 +59,7 @@ const Login = () => {
         try {
             const resultAction = await dispatch(login(formData));
             if (login.fulfilled.match(resultAction)) {
+                dispatch(fetchProfile());
                 navigate("/products");
             } else {
                 console.error("Login failed");

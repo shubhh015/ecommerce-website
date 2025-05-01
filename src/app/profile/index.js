@@ -16,16 +16,25 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../redux/authSlice";
 import { fetchMyOrders } from "../../redux/orderSlice";
+import { fetchProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
+import EditProfileModal from "./EditProfileModal";
 
 const ProfilePage = () => {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+    const [editOpen, setEditOpen] = useState(false);
+
+    useEffect(() => {
+        dispatch(fetchProfile());
+    }, [dispatch]);
+
+    const user = useSelector((state) => state.profile?.user);
+
     const { orders, status } = useSelector((state) => state.orders);
     const navigate = useNavigate();
     const latestTwoOrders = orders
@@ -60,7 +69,11 @@ const ProfilePage = () => {
                     }
                     action={
                         <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                            <Button variant="outlined" startIcon={<EditIcon />}>
+                            <Button
+                                variant="outlined"
+                                onClick={() => setEditOpen(true)}
+                                startIcon={<EditIcon />}
+                            >
                                 Edit Profile
                             </Button>
                             <Button
@@ -201,6 +214,10 @@ const ProfilePage = () => {
                     )}
                 </Paper>
             )}
+            <EditProfileModal
+                open={editOpen}
+                onClose={() => setEditOpen(false)}
+            />
         </Container>
     );
 };
