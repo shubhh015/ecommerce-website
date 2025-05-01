@@ -1,5 +1,6 @@
 import { Delete, Edit } from "@mui/icons-material";
 import {
+    Autocomplete,
     Box,
     Button,
     CircularProgress,
@@ -8,8 +9,6 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
-    MenuItem,
-    Select,
     Table,
     TableBody,
     TableCell,
@@ -27,7 +26,14 @@ import {
     updateProduct,
 } from "../../redux/productSlice";
 
-const initialForm = { name: "", description: "", price: "", category: "" };
+const initialForm = {
+    name: "",
+    description: "",
+    price: "",
+    category: [],
+    inventory: "",
+    image: null,
+};
 
 const AdminDashboard = () => {
     const dispatch = useDispatch();
@@ -51,7 +57,11 @@ const AdminDashboard = () => {
                       name: product.name,
                       description: product.description,
                       price: product.price,
-                      category: product.category,
+                      category: Array.isArray(product.category)
+                          ? product.category
+                          : [product.category],
+                      image: product.image ? product.image.url : null,
+                      inventory: product.inventory,
                   }
                 : initialForm
         );
@@ -62,6 +72,7 @@ const AdminDashboard = () => {
         setOpen(false);
         setForm(initialForm);
         setEditId(null);
+        dispatch(fetchProducts({}));
     };
 
     const handleChange = (e) => {
@@ -69,10 +80,31 @@ const AdminDashboard = () => {
     };
 
     const handleSubmit = () => {
-        if (editId) {
-            dispatch(updateProduct({ id: editId, updates: form }));
+        let payload;
+        if (form.image) {
+            const imageFile = {
+                url: form.image,
+                alt: form.name,
+            };
+            payload = new FormData();
+            payload.append("image", form.imageFile);
+            payload.append("name", form.name);
+            payload.append("description", form.description);
+            payload.append("price", form.price);
+            payload.append("category", form.category);
         } else {
-            dispatch(addProduct(form));
+            payload = {
+                name: form.name,
+                description: form.description,
+                price: form.price,
+                category: form.category,
+            };
+        }
+
+        if (editId) {
+            dispatch(updateProduct({ id: editId, updates: payload }));
+        } else {
+            dispatch(addProduct(payload));
         }
         handleClose();
     };
@@ -100,20 +132,57 @@ const AdminDashboard = () => {
             <Table sx={{ mt: 2 }}>
                 <TableHead>
                     <TableRow>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Description</TableCell>
+                        <TableCell> Product Details</TableCell>
                         <TableCell>Price</TableCell>
                         <TableCell>Category</TableCell>
+                        <TableCell>Stock</TableCell>
                         <TableCell>Actions</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {products.map((product) => (
                         <TableRow key={product._id}>
-                            <TableCell>{product.name}</TableCell>
-                            <TableCell>{product.description}</TableCell>
+                            <TableCell>
+                                <Box display="flex" alignItems="center" gap={2}>
+                                    {product?.image?.url && (
+                                        <img
+                                            src={product.image.url}
+                                            alt={
+                                                product.image.alt ||
+                                                product.name
+                                            }
+                                            style={{
+                                                width: 60,
+                                                height: 60,
+                                                objectFit: "cover",
+                                                borderRadius: 4,
+                                            }}
+                                        />
+                                    )}
+                                    <Box>
+                                        <Typography
+                                            variant="subtitle1"
+                                            fontWeight="bold"
+                                        >
+                                            {product.name}
+                                        </Typography>
+                                        <Typography
+                                            variant="body2"
+                                            color="textSecondary"
+                                        >
+                                            {product.description}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </TableCell>
+
                             <TableCell>{product.price}</TableCell>
-                            <TableCell>{product.category}</TableCell>
+                            <TableCell>
+                                {Array.isArray(product.category)
+                                    ? product.category.join(", ")
+                                    : product.category}
+                            </TableCell>
+                            <TableCell>{product.inventory}</TableCell>
                             <TableCell>
                                 <IconButton onClick={() => handleOpen(product)}>
                                     <Edit />
@@ -135,6 +204,42 @@ const AdminDashboard = () => {
                     {editId ? "Edit Product" : "Add Product"}
                 </DialogTitle>
                 <DialogContent>
+                    {form.image && (
+                        <Box mt={2}>
+                            <img
+                                src={form.image}
+                                alt="Preview"
+                                style={{
+                                    width: "100%",
+                                    maxHeight: 200,
+                                    objectFit: "contain",
+                                }}
+                            />
+                        </Box>
+                    )}
+                    <Box mt={2}>
+                        <input
+                            accept="image/*"
+                            id="upload-image"
+                            type="file"
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    const file = e.target.files[0];
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        image: URL.createObjectURL(file),
+                                        imageFile: file,
+                                    }));
+                                }
+                            }}
+                        />
+                        <label htmlFor="upload-image">
+                            <Button variant="outlined" component="span">
+                                Upload Image
+                            </Button>
+                        </label>
+                    </Box>
                     <TextField
                         margin="dense"
                         label="Name"
@@ -160,23 +265,38 @@ const AdminDashboard = () => {
                         onChange={handleChange}
                         fullWidth
                     />
-                    <Select
+                    <TextField
                         margin="dense"
-                        name="category"
-                        value={form.category}
+                        label="Stock"
+                        name="inventory"
+                        type="number"
+                        value={form.inventory}
                         onChange={handleChange}
                         fullWidth
-                        displayEmpty
-                    >
-                        <MenuItem value="">
-                            <em>Select Category</em>
-                        </MenuItem>
-                        {categories.map((cat) => (
-                            <MenuItem key={cat} value={cat}>
-                                {cat}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                    />
+                    <Autocomplete
+                        multiple
+                        id="categories-multiple"
+                        options={categories}
+                        getOptionLabel={(option) => option}
+                        value={form.category || []}
+                        onChange={(event, newValue) => {
+                            setForm((prev) => ({
+                                ...prev,
+                                category: newValue,
+                            }));
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="standard"
+                                label="Categories"
+                                placeholder="Select Categories"
+                                margin="dense"
+                                fullWidth
+                            />
+                        )}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>

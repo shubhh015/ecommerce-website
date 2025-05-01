@@ -16,33 +16,30 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import React from "react";
-
-const user = {
-    name: "Jane Doe",
-    email: "jane.doe@example.com",
-    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-    address: "123 Maple Street, Springfield, USA",
-    joined: "March 2022",
-    recentOrders: [
-        {
-            id: "ORD-1001",
-            product: "Modern Sofa",
-            date: "2025-04-10",
-            price: 499.99,
-            status: "Delivered",
-        },
-        {
-            id: "ORD-1002",
-            product: "Oak Dining Table",
-            date: "2025-03-28",
-            price: 899.0,
-            status: "Shipped",
-        },
-    ],
-};
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../redux/authSlice";
+import { fetchMyOrders } from "../../redux/orderSlice";
+import { ROLE } from "../../utils/constants/role";
 
 const ProfilePage = () => {
+    const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
+    const { orders, status } = useSelector((state) => state.orders);
+    const navigate = useNavigate();
+    const latestTwoOrders = orders
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 2);
+    useEffect(() => {
+        dispatch(fetchMyOrders());
+    }, [dispatch]);
+    console.log("two", orders);
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate("/login");
+    };
+
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Card variant="outlined" sx={{ mb: 4 }}>
@@ -55,13 +52,18 @@ const ProfilePage = () => {
                         />
                     }
                     action={
-                        <Button
-                            variant="outlined"
-                            startIcon={<EditIcon />}
-                            sx={{ mt: 2 }}
-                        >
-                            Edit Profile
-                        </Button>
+                        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                            <Button variant="outlined" startIcon={<EditIcon />}>
+                                Edit Profile
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </Button>
+                        </Stack>
                     }
                     title={
                         <Typography variant="h5" fontWeight="bold">
@@ -92,71 +94,78 @@ const ProfilePage = () => {
                 </CardContent>
             </Card>
 
-            <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Recent Orders
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                {user.recentOrders.length === 0 ? (
-                    <Typography color="text.secondary">
-                        No recent orders.
+            {user.role !== ROLE.ADMIN && (
+                <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        Recent Orders
                     </Typography>
-                ) : (
-                    <Grid container spacing={2}>
-                        {user.recentOrders.map((order) => (
-                            <Grid item xs={12} md={6} key={order.id}>
-                                <Card variant="outlined">
-                                    <CardContent>
-                                        <Stack
-                                            direction="row"
-                                            alignItems="center"
-                                            justifyContent="space-between"
-                                        >
+                    <Divider sx={{ mb: 2 }} />
+                    {status === "idle" ? (
+                        <Typography color="text.secondary">
+                            Loading orders...
+                        </Typography>
+                    ) : latestTwoOrders.length === 0 ? (
+                        <Typography color="text.secondary">
+                            No recent orders.
+                        </Typography>
+                    ) : (
+                        <Grid container spacing={2}>
+                            {latestTwoOrders.map((order) => (
+                                <Grid item xs={12} md={6} key={order.id}>
+                                    <Card variant="outlined">
+                                        <CardContent>
                                             <Stack
                                                 direction="row"
                                                 alignItems="center"
-                                                spacing={2}
+                                                justifyContent="space-between"
                                             >
-                                                <ShoppingCartIcon color="primary" />
-                                                <Box>
-                                                    <Typography fontWeight="bold">
-                                                        {order.product}
+                                                <Stack
+                                                    direction="row"
+                                                    alignItems="center"
+                                                    spacing={2}
+                                                >
+                                                    <ShoppingCartIcon color="primary" />
+                                                    <Box>
+                                                        <Typography fontWeight="bold">
+                                                            {order.product}
+                                                        </Typography>
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            {order.date}
+                                                        </Typography>
+                                                    </Box>
+                                                </Stack>
+                                                <Box textAlign="right">
+                                                    <Typography
+                                                        color="primary"
+                                                        fontWeight="bold"
+                                                    >
+                                                        $
+                                                        {order.price.toFixed(2)}
                                                     </Typography>
                                                     <Typography
-                                                        variant="body2"
-                                                        color="text.secondary"
+                                                        variant="caption"
+                                                        color={
+                                                            order.status ===
+                                                            "Delivered"
+                                                                ? "success.main"
+                                                                : "warning.main"
+                                                        }
                                                     >
-                                                        {order.date}
+                                                        {order.status}
                                                     </Typography>
                                                 </Box>
                                             </Stack>
-                                            <Box textAlign="right">
-                                                <Typography
-                                                    color="primary"
-                                                    fontWeight="bold"
-                                                >
-                                                    ${order.price.toFixed(2)}
-                                                </Typography>
-                                                <Typography
-                                                    variant="caption"
-                                                    color={
-                                                        order.status ===
-                                                        "Delivered"
-                                                            ? "success.main"
-                                                            : "warning.main"
-                                                    }
-                                                >
-                                                    {order.status}
-                                                </Typography>
-                                            </Box>
-                                        </Stack>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
-            </Paper>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
+                </Paper>
+            )}
         </Container>
     );
 };

@@ -1,5 +1,5 @@
 import { Box, Container, Grid, Typography } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { fetchCart } from "../../redux/cartSlice";
@@ -10,13 +10,17 @@ import TagList from "./TagList";
 const Products = () => {
     const dispatch = useDispatch();
     const { products, loading, error } = useSelector((state) => state.products);
-
+    const [selectedTag, setSelectedTag] = useState("Best Seller");
     useEffect(() => {
-        dispatch(fetchProducts({ category: "Best Seller" }));
-    }, [dispatch]);
+        dispatch(fetchProducts({ category: selectedTag }));
+    }, [dispatch, selectedTag]);
+
     useEffect(() => {
         dispatch(fetchCart());
     }, [dispatch]);
+    const handleTagSelect = (tag) => {
+        setSelectedTag(tag);
+    };
     return (
         <Container sx={{ marginY: 2 }}>
             <Box
@@ -49,7 +53,10 @@ const Products = () => {
                 </Box>
 
                 <Box>
-                    <TagList />
+                    <TagList
+                        selectedTag={selectedTag}
+                        onTagSelect={handleTagSelect}
+                    />
                 </Box>
             </Box>
 

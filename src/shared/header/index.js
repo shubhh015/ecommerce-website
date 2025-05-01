@@ -13,6 +13,7 @@ import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ROLE } from "../../utils/constants/role";
 const Header = () => {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -23,17 +24,28 @@ const Header = () => {
         setAnchorElNav(event.currentTarget);
     };
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-    const pages = isAuthenticated
-        ? [
-              { title: "Products", path: "/products" },
-              { title: "AboutUs", path: "/aboutUs" },
-              { title: "Orders", path: "/orders" },
-          ]
-        : [
-              { title: "Products", path: "/products" },
-              { title: "AboutUs", path: "/aboutUs" },
-              { title: "Login", path: "/login" },
-          ];
+    const { user } = useSelector((state) => state.auth);
+
+    const pages = React.useMemo(() => {
+        if (user?.role === ROLE.ADMIN) {
+            return [
+                { title: "Dashboard", path: "/admin/dashboard" },
+                { title: "AboutUs", path: "/aboutUs" },
+            ];
+        } else if (isAuthenticated) {
+            return [
+                { title: "Products", path: "/products" },
+                { title: "AboutUs", path: "/aboutUs" },
+                { title: "Orders", path: "/orders" },
+            ];
+        } else {
+            return [
+                { title: "Products", path: "/products" },
+                { title: "AboutUs", path: "/aboutUs" },
+                { title: "Login", path: "/login" },
+            ];
+        }
+    }, [user, isAuthenticated]);
 
     const { pathname } = useLocation();
     const handleOpenUserMenu = (event) => {
@@ -192,7 +204,7 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-                    {isAuthenticated && (
+                    {isAuthenticated && user?.role !== ROLE.ADMIN && (
                         <Link to="/cart">
                             <IconButton color="primary">
                                 <Badge

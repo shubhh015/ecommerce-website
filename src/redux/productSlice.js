@@ -20,7 +20,10 @@ export const addProduct = createAsyncThunk(
     "products/addProduct",
     async (productData, thunkAPI) => {
         try {
-            const response = await axios.post("/products", productData);
+            const token = localStorage.getItem("token");
+            const response = await axios.post("/products", productData, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             return response.data;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response.data);
@@ -32,7 +35,10 @@ export const updateProduct = createAsyncThunk(
     "products/updateProduct",
     async ({ id, updates }, thunkAPI) => {
         try {
-            const response = await axios.put(`/products/${id}`, updates);
+            const token = localStorage.getItem("token");
+            const response = await axios.put(`/products/${id}`, updates, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             return response.data;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response.data);
@@ -45,7 +51,10 @@ export const deleteProduct = createAsyncThunk(
     "products/deleteProduct",
     async (id, thunkAPI) => {
         try {
-            await axios.delete(`/products/${id}`);
+            const token = localStorage.getItem("token");
+            await axios.delete(`/products/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             return id;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response.data);
