@@ -61,6 +61,7 @@ const AdminDashboard = () => {
                           ? product.category
                           : [product.category],
                       image: product.image ? product.image.url : null,
+                      isActive: product?.isActive,
                       inventory: product.inventory,
                   }
                 : initialForm
@@ -92,12 +93,16 @@ const AdminDashboard = () => {
             payload.append("description", form.description);
             payload.append("price", form.price);
             payload.append("category", form.category);
+            payload.append("isActive", form.inventory > 0 ? true : false);
+            payload.append("inventory", form.inventory);
         } else {
             payload = {
                 name: form.name,
                 description: form.description,
                 price: form.price,
                 category: form.category,
+                isActive: form.inventory > 0 ? true : false,
+                inventory: form.inventory,
             };
         }
 
