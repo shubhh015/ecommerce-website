@@ -1,5 +1,7 @@
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Button } from "@mui/material";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import { Badge, Button } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -9,28 +11,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-
-const pages = [
-    {
-        title: "Products",
-        path: "/products",
-    },
-    {
-        title: "Pricing",
-        path: "/pricing",
-    },
-    {
-        title: "Blog",
-        path: "/blog",
-    },
-    {
-        title: "Login",
-        path: "/login",
-    },
-];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
-
+import { useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 const Header = () => {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -40,6 +22,19 @@ const Header = () => {
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
     };
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+    const pages = isAuthenticated
+        ? [
+              { title: "Products", path: "/products" },
+              { title: "AboutUs", path: "/aboutUs" },
+              { title: "Orders", path: "/orders" },
+          ]
+        : [
+              { title: "Products", path: "/products" },
+              { title: "AboutUs", path: "/aboutUs" },
+              { title: "Login", path: "/login" },
+          ];
+
     const { pathname } = useLocation();
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
@@ -69,7 +64,9 @@ const Header = () => {
             window.removeEventListener("scroll", handleScroll);
         };
     }, [lastScrollY]);
-
+    const cartItems = useSelector((state) => state.cart.items);
+    const totalItems =
+        cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
     return (
         <AppBar
             position="fixed"
@@ -123,7 +120,10 @@ const Header = () => {
                             {pages.map((page) => (
                                 <MenuItem
                                     key={page}
-                                    onClick={handleCloseNavMenu}
+                                    onClick={() => {
+                                        handleCloseNavMenu();
+                                        navigate(page.path);
+                                    }}
                                 >
                                     <Typography sx={{ textAlign: "center" }}>
                                         {page.title}
@@ -137,7 +137,7 @@ const Header = () => {
                         variant="h6"
                         noWrap
                         component="a"
-                        href="#app-bar-with-responsive-menu"
+                        href="/"
                         sx={{
                             mr: 2,
                             display: { xs: "none", md: "flex" },
@@ -155,7 +155,7 @@ const Header = () => {
                         variant="h5"
                         noWrap
                         component="a"
-                        href="#app-bar-with-responsive-menu"
+                        href="/"
                         sx={{
                             mr: 2,
                             display: { xs: "flex", md: "none" },
@@ -192,7 +192,28 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-
+                    {isAuthenticated && (
+                        <Link to="/cart">
+                            <IconButton color="primary">
+                                <Badge
+                                    badgeContent={totalItems}
+                                    color="secondary"
+                                    showZero
+                                >
+                                    <ShoppingCartOutlinedIcon />
+                                </Badge>
+                            </IconButton>
+                        </Link>
+                    )}
+                    {isAuthenticated && (
+                        <IconButton
+                            color="primary"
+                            size="large"
+                            onClick={() => navigate("/profile")}
+                        >
+                            <AccountCircleIcon fontSize="large" />
+                        </IconButton>
+                    )}
                     {/* <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton

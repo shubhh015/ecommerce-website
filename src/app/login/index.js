@@ -17,10 +17,14 @@ import {
     Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../redux/authSlice";
-import { validateEmail } from "../../utils/validation";
+import {
+    getPasswordHelperMessage,
+    validateEmail,
+    validatePassword,
+} from "../../utils/validation";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -31,8 +35,9 @@ const Login = () => {
     const handleClickShowPassword = () => {
         setShowPassword((prev) => !prev);
     };
-
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const handleChange = (e) => {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
         validateField(name, value);
@@ -43,15 +48,23 @@ const Login = () => {
         if (name === "email" && !validateEmail(value)) {
             error = "Enter a valid email address.";
         }
-        if (name === "password") {
-            error =
-                "Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, and one number.";
+        if (name === "password" && !validatePassword(value)) {
+            error = getPasswordHelperMessage(value);
         }
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch(login(formData));
+        try {
+            const resultAction = await dispatch(login(formData));
+            if (login.fulfilled.match(resultAction)) {
+                navigate("/products");
+            } else {
+                console.error("Login failed");
+            }
+        } catch (err) {
+            console.error("Login error: ", err);
+        }
     };
     const isFormValid =
         !errors.email &&
@@ -82,7 +95,7 @@ const Login = () => {
                     color: "#054C73",
                     textDecoration: "none",
                     marginBottom: "2rem",
-                    cursor:"pointer"
+                    cursor: "pointer",
                 }}
                 onClick={() => navigate("/")}
             >
@@ -117,7 +130,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleChange}
                     error={!!errors.password}
-                    helperText="Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, and one number."
+                    helperText={errors.password}
                     variant="outlined"
                     sx={{ marginBottom: "1rem" }}
                     InputProps={{

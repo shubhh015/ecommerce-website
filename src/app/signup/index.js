@@ -17,8 +17,9 @@ import {
     Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { signup } from "../../redux/authSlice";
 import {
     getPasswordHelperMessage,
     validateEmail,
@@ -29,7 +30,7 @@ import {
 const Signup = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        username: "",
+        name: "",
         phone: "",
         email: "",
         password: "",
@@ -39,6 +40,7 @@ const Signup = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const dispatch = useDispatch();
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -73,7 +75,19 @@ const Signup = () => {
         }
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
-
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const result = await dispatch(signup(formData));
+            if (signup.fulfilled.match(result)) {
+                navigate("/products");
+            } else {
+                console.error("Signup failed");
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+        }
+    };
     const hasErrors =
         Object.values(errors).some((error) => error.length > 0) ||
         Object.values(formData).some((value) => value.length === 0);
@@ -112,11 +126,11 @@ const Signup = () => {
                 <TextField
                     fullWidth
                     label="Username"
-                    name="username"
-                    value={formData.username}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    error={!!errors.username}
-                    helperText={errors.username}
+                    error={!!errors.name}
+                    helperText={errors.name}
                     sx={{ marginBottom: "1rem" }}
                     required
                 />
@@ -209,6 +223,7 @@ const Signup = () => {
                     color="primary"
                     fullWidth
                     disabled={hasErrors}
+                    onClick={handleSubmit}
                     sx={{ marginBottom: "1rem", borderRadius: "20px" }}
                 >
                     Sign Up
