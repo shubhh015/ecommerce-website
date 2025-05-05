@@ -19,18 +19,26 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { logout } from "../../redux/authSlice";
 import { fetchMyOrders } from "../../redux/orderSlice";
 import { fetchProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
 import EditProfileModal from "./EditProfileModal";
-
 const ProfilePage = () => {
     const dispatch = useDispatch();
     const [editOpen, setEditOpen] = useState(false);
 
     useEffect(() => {
-        dispatch(fetchProfile());
+        const fetchData = async () => {
+            const resultAction = await dispatch(fetchProfile());
+            if (fetchProfile.rejected.match(resultAction)) {
+                toast.error("Failed to load profile");
+            } else {
+                toast.success("Profile loaded successfully");
+            }
+        };
+        fetchData();
     }, [dispatch]);
 
     const user = useSelector((state) => state.profile?.user);

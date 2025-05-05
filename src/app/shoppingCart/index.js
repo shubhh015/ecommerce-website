@@ -17,6 +17,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
     addOrUpdateCartItem,
     emptyCart,
@@ -24,13 +25,20 @@ import {
     removeCartItem,
 } from "../../redux/cartSlice";
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
-
 const Cart = () => {
     const cartItems = useSelector((state) => state.cart.items);
     const totalPrice = useSelector((state) => state.cart.subTotal);
     const dispatch = useDispatch();
     useEffect(() => {
-        dispatch(fetchCart());
+        const loadCart = async () => {
+            const resultAction = await dispatch(fetchCart());
+            if (fetchCart.rejected.match(resultAction)) {
+                toast.error(
+                    resultAction.payload?.message || "Failed to load cart"
+                );
+            }
+        };
+        loadCart();
     }, [dispatch]);
     const user = useSelector((state) => state.user);
 

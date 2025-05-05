@@ -11,12 +11,12 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import {
     addOrUpdateCartItem,
     fetchCart,
     removeCartItem,
 } from "../../redux/cartSlice";
-
 const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
@@ -26,25 +26,59 @@ const ProductCard = ({ product }) => {
     );
     const quantity = productInCart ? productInCart.quantity : 0;
     const isActive = product?.isActive ?? true;
-    const handleAddToCart = () => {
-        dispatch(
-            addOrUpdateCartItem({
-                product: product,
-                quantity: quantity + 1,
-            })
-        ).then(() => dispatch(fetchCart()));
-    };
-
-    const handleRemoveFromCart = () => {
-        if (quantity > 1) {
-            dispatch(
+    const handleAddToCart = async () => {
+        try {
+            const resultAction = await dispatch(
                 addOrUpdateCartItem({
                     product: product,
-                    quantity: quantity - 1,
+                    quantity: quantity + 1,
                 })
-            ).then(() => dispatch(fetchCart()));
-        } else if (quantity === 1) {
-            dispatch(removeCartItem(product?._id));
+            );
+            if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                toast.error(
+                    resultAction.payload?.message || "Failed to add to cart"
+                );
+            } else {
+                toast.success("Added to cart!");
+                dispatch(fetchCart());
+            }
+        } catch (error) {
+            toast.error("An error occurred while adding to cart");
+        }
+    };
+
+    const handleRemoveFromCart = async () => {
+        try {
+            if (quantity > 1) {
+                const resultAction = await dispatch(
+                    addOrUpdateCartItem({
+                        product: product,
+                        quantity: quantity - 1,
+                    })
+                );
+                if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                    toast.error(
+                        resultAction.payload?.message || "Failed to update cart"
+                    );
+                } else {
+                    toast.info("Updated cart quantity");
+                    dispatch(fetchCart());
+                }
+            } else if (quantity === 1) {
+                const resultAction = await dispatch(
+                    removeCartItem(product?._id)
+                );
+                if (removeCartItem.rejected.match(resultAction)) {
+                    toast.error(
+                        resultAction.payload?.message || "Failed to remove item"
+                    );
+                } else {
+                    toast.success("Removed from cart");
+                    dispatch(fetchCart());
+                }
+            }
+        } catch (error) {
+            toast.error("An error occurred while updating the cart");
         }
     };
 

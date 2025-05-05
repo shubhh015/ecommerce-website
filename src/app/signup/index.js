@@ -19,6 +19,7 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { signup } from "../../redux/authSlice";
 import {
     getPasswordHelperMessage,
@@ -77,14 +78,19 @@ const Signup = () => {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
             const result = await dispatch(signup(formData));
             if (signup.fulfilled.match(result)) {
                 navigate("/products");
             } else {
+                toast.error("Signup failed. Please try again.");
                 console.error("Signup failed");
             }
         } catch (error) {
+            toast.error(
+                "An unexpected error occurred. Please try again later."
+            );
             console.error("Signup error:", error);
         }
     };

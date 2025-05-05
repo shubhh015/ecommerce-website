@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import {
     addProduct,
     deleteProduct,
@@ -34,7 +35,6 @@ const initialForm = {
     inventory: "",
     image: null,
 };
-
 const AdminDashboard = () => {
     const dispatch = useDispatch();
     const { products, categories, loading, error } = useSelector(
@@ -46,7 +46,15 @@ const AdminDashboard = () => {
     const [form, setForm] = useState(initialForm);
 
     useEffect(() => {
-        dispatch(fetchProducts({}));
+        const fetchData = async () => {
+            const resultAction = await dispatch(fetchProducts({}));
+            if (fetchProducts.rejected.match(resultAction)) {
+                toast.error("Failed to load products");
+            } else {
+                toast.success("Products loaded successfully");
+            }
+        };
+        fetchData();
     }, [dispatch]);
 
     const handleOpen = (product = null) => {

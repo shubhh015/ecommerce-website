@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import { updateProfile } from "../../redux/profileSlice";
-
 const style = {
     position: "absolute",
     top: "50%",
@@ -72,10 +72,9 @@ const EditProfileModal = ({ open, onClose }) => {
         }
     };
 
-    // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Prepare data for API
+
         const formData = new FormData();
         formData.append("name", form.name);
         formData.append("email", form.email);
@@ -83,9 +82,14 @@ const EditProfileModal = ({ open, onClose }) => {
         if (form.avatar instanceof File) {
             formData.append("avatar", form.avatar);
         }
-        // Dispatch updateProfile thunk (should handle FormData in API)
-        await dispatch(updateProfile(formData));
-        onClose();
+
+        try {
+            await dispatch(updateProfile(formData)).unwrap();
+            toast.success("Profile updated successfully!");
+            onClose();
+        } catch (error) {
+            toast.error("Failed to update profile. Please try again.");
+        }
     };
 
     return (
