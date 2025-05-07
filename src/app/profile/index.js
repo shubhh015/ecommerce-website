@@ -24,11 +24,12 @@ import { logout } from "../../redux/authSlice";
 import { fetchMyOrders } from "../../redux/orderSlice";
 import { fetchProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
+import ChangePasswordModal from "./ChangePasswordModal";
 import EditProfileModal from "./EditProfileModal";
 const ProfilePage = () => {
     const dispatch = useDispatch();
     const [editOpen, setEditOpen] = useState(false);
-
+    const [passwordOpen, setPasswordOpen] = useState(false);
     useEffect(() => {
         const fetchData = async () => {
             const resultAction = await dispatch(fetchProfile());
@@ -222,6 +223,17 @@ const ProfilePage = () => {
                     )}
                 </Paper>
             )}
+            <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setPasswordOpen(true)}
+            >
+                Change Password
+            </Button>
+            <ChangePasswordModal
+                open={passwordOpen}
+                onClose={() => setPasswordOpen(false)}
+            />
             <EditProfileModal
                 open={editOpen}
                 onClose={() => setEditOpen(false)}

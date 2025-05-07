@@ -25,9 +25,13 @@ import {
     removeCartItem,
 } from "../../redux/cartSlice";
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
+import AddressSelector from "./AddressSelector";
 const Cart = () => {
     const cartItems = useSelector((state) => state.cart.items);
     const totalPrice = useSelector((state) => state.cart.subTotal);
+    const [addressOpen, setAddressOpen] = useState(false);
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
+
     const dispatch = useDispatch();
     useEffect(() => {
         const loadCart = async () => {
@@ -111,7 +115,13 @@ const Cart = () => {
         const productId = item.product?._id;
         dispatch(removeCartItem(productId));
     };
+    const handleCheckout = () => setAddressOpen(true);
 
+    const handleAddressSelect = (addressId) => {
+        setSelectedAddressId(addressId);
+        setAddressOpen(false);
+        openRazorpayCheckout();
+    };
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
     return (
@@ -339,7 +349,7 @@ const Cart = () => {
                             color="primary"
                             fullWidth
                             sx={{ mt: 3 }}
-                            onClick={openRazorpayCheckout}
+                            onClick={handleCheckout}
                         >
                             CHECKOUT
                         </Button>
@@ -349,6 +359,11 @@ const Cart = () => {
             <Link variant="text" sx={{ mt: 2 }} to="/products">
                 &larr; Continue Shopping
             </Link>
+            <AddressSelector
+                open={addressOpen}
+                onClose={() => setAddressOpen(false)}
+                onSelect={handleAddressSelect}
+            />
         </Container>
     );
 };

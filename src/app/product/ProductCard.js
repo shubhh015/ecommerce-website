@@ -20,65 +20,84 @@ import {
 const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
-
+    const isAuthenticated = useSelector((state) => !!state.auth.token);
     const productInCart = cartItems.find(
         (item) => item.product?._id === product?._id
     );
     const quantity = productInCart ? productInCart.quantity : 0;
     const isActive = product?.isActive ?? true;
+
     const handleAddToCart = async () => {
-        try {
-            const resultAction = await dispatch(
-                addOrUpdateCartItem({
-                    product: product,
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(
+                    addOrUpdateCartItem({
+                        product: product,
+                        quantity: quantity + 1,
+                    })
+                );
+                if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                    toast.error("Failed to add to cart");
+                } else {
+                    toast.success("Added to cart!");
+                    dispatch(fetchCart());
+                }
+            } catch (error) {
+                toast.error("An error occurred while adding to cart");
+            }
+        } else {
+            dispatch(
+                guestAddOrUpdateCartItem({
+                    product,
                     quantity: quantity + 1,
                 })
             );
-            if (addOrUpdateCartItem.rejected.match(resultAction)) {
-                toast.error(
-                    resultAction.payload?.message || "Failed to add to cart"
-                );
-            } else {
-                toast.success("Added to cart!");
-                dispatch(fetchCart());
-            }
-        } catch (error) {
-            toast.error("An error occurred while adding to cart");
+            toast.success("Added to cart!");
         }
     };
 
     const handleRemoveFromCart = async () => {
-        try {
+        if (isAuthenticated) {
+            try {
+                if (quantity > 1) {
+                    const resultAction = await dispatch(
+                        addOrUpdateCartItem({
+                            product: product,
+                            quantity: quantity - 1,
+                        })
+                    );
+                    if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                        toast.error("Failed to update cart");
+                    } else {
+                        dispatch(fetchCart());
+                    }
+                } else if (quantity === 1) {
+                    const resultAction = await dispatch(
+                        removeCartItem(product?._id)
+                    );
+                    if (removeCartItem.rejected.match(resultAction)) {
+                        toast.error("Failed to remove item");
+                    } else {
+                        toast.success("Removed from cart");
+                        dispatch(fetchCart());
+                    }
+                }
+            } catch (error) {
+                toast.error("An error occurred while updating the cart");
+            }
+        } else {
             if (quantity > 1) {
-                const resultAction = await dispatch(
-                    addOrUpdateCartItem({
-                        product: product,
+                dispatch(
+                    guestAddOrUpdateCartItem({
+                        product,
                         quantity: quantity - 1,
                     })
                 );
-                if (addOrUpdateCartItem.rejected.match(resultAction)) {
-                    toast.error(
-                        resultAction.payload?.message || "Failed to update cart"
-                    );
-                } else {
-                    toast.info("Updated cart quantity");
-                    dispatch(fetchCart());
-                }
+                toast.info("Updated cart quantity");
             } else if (quantity === 1) {
-                const resultAction = await dispatch(
-                    removeCartItem(product?._id)
-                );
-                if (removeCartItem.rejected.match(resultAction)) {
-                    toast.error(
-                        resultAction.payload?.message || "Failed to remove item"
-                    );
-                } else {
-                    toast.success("Removed from cart");
-                    dispatch(fetchCart());
-                }
+                dispatch(guestRemoveCartItem(product._id));
+                toast.success("Removed from cart");
             }
-        } catch (error) {
-            toast.error("An error occurred while updating the cart");
         }
     };
 

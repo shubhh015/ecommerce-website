@@ -35,7 +35,7 @@ const Header = () => {
     }, [dispatch]);
 
     const pages = React.useMemo(() => {
-        if (user?.role === ROLE.ADMIN) {
+        if (user?.role === ROLE.ADMIN && isAuthenticated) {
             return [
                 { title: "Dashboard", path: "/admin/dashboard" },
                 { title: "AboutUs", path: "/aboutUs" },
