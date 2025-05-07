@@ -133,14 +133,11 @@ const AdminDashboard = () => {
         }
     };
     useEffect(() => {
-        const wordCount = searchQuery
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean).length;
-        if (wordCount > 3 || selectedCategories.length > 0) {
+        const wordCount = search.trim().split(/\s+/).filter(Boolean).length;
+        if (wordCount > 3 || selectedCategory.length > 0) {
             handleFilter();
         }
-    }, [searchQuery, selectedCategory]);
+    }, [search, selectedCategory]);
 
     const handleFilter = () => {
         dispatch(
@@ -157,8 +154,8 @@ const AdminDashboard = () => {
                     label="Search Products"
                     variant="outlined"
                     size="small"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                     onKeyPress={(e) => {
                         if (e.key === "Enter") handleFilter();
                     }}
@@ -167,8 +164,8 @@ const AdminDashboard = () => {
                     multiple
                     options={categories}
                     getOptionLabel={(option) => option}
-                    value={selectedCategories}
-                    onChange={(e, newValue) => setSelectedCategories(newValue)}
+                    value={selectedCategory}
+                    onChange={(e, newValue) => setSelectedCategory(newValue)}
                     renderInput={(params) => (
                         <TextField
                             {...params}
