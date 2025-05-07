@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { logout } from "../../redux/authSlice";
 import { fetchMyOrders } from "../../redux/orderSlice";
-import { fetchProfile } from "../../redux/profileSlice";
+import { fetchProfile, resetProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
 import ChangePasswordModal from "./ChangePasswordModal";
 import EditProfileModal from "./EditProfileModal";
@@ -58,6 +58,7 @@ const ProfilePage = () => {
 
     const handleLogout = () => {
         dispatch(logout());
+        dispatch(resetProfile());
         navigate("/login");
     };
 

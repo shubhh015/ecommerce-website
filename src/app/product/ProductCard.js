@@ -15,6 +15,8 @@ import { toast } from "react-toastify";
 import {
     addOrUpdateCartItem,
     fetchCart,
+    guestAddOrUpdateCartItem,
+    guestRemoveCartItem,
     removeCartItem,
 } from "../../redux/cartSlice";
 const ProductCard = ({ product }) => {
