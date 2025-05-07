@@ -225,7 +225,7 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-                    {isAuthenticated && user?.role !== ROLE.ADMIN && (
+                    {user?.role !== ROLE.ADMIN && (
                         <Link to="/cart">
                             <IconButton color="primary">
                                 <Badge
@@ -238,6 +238,7 @@ const Header = () => {
                             </IconButton>
                         </Link>
                     )}
+
                     {isAuthenticated && (
                         <IconButton
                             color="primary"
