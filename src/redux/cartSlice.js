@@ -161,7 +161,6 @@ const cartSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-
             .addCase(fetchCart.pending, (state) => {
                 state.status = "loading";
             })
@@ -204,10 +203,6 @@ const cartSlice = createSlice({
 
             .addCase(updateShipping.fulfilled, (state, action) => {
                 state.shippingCost = action.payload.shippingCost;
-            })
-            .addCase(fetchCart.fulfilled, (state, action) => {
-                state.items = action.payload;
-                state.loading = false;
             });
     },
 });
