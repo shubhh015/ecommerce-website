@@ -34,6 +34,7 @@ const initialForm = {
     category: [],
     inventory: "",
     image: null,
+    quantitySold: 0,
 };
 const AdminDashboard = () => {
     const dispatch = useDispatch();
@@ -71,6 +72,7 @@ const AdminDashboard = () => {
                       image: product.image ? product.image.url : null,
                       isActive: product?.isActive,
                       inventory: product.inventory,
+                      quantitySold: product.quantitySold,
                   }
                 : initialForm
         );
@@ -103,6 +105,7 @@ const AdminDashboard = () => {
             payload.append("category", form.category);
             payload.append("isActive", form.inventory > 0 ? true : false);
             payload.append("inventory", form.inventory);
+            payload.append("quantitySold", form.quantitySold);
         } else {
             payload = {
                 name: form.name,
@@ -111,6 +114,7 @@ const AdminDashboard = () => {
                 category: form.category,
                 isActive: form.inventory > 0 ? true : false,
                 inventory: form.inventory,
+                quantitySold: form.quantitySold || 0,
             };
         }
 
@@ -121,18 +125,64 @@ const AdminDashboard = () => {
         }
         handleClose();
     };
-
+    const [search, setSearch] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("");
     const handleDelete = (id) => {
         if (window.confirm("Delete this product?")) {
             dispatch(deleteProduct(id));
         }
     };
+    useEffect(() => {
+        const wordCount = searchQuery
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean).length;
+        if (wordCount > 3 || selectedCategories.length > 0) {
+            handleFilter();
+        }
+    }, [searchQuery, selectedCategory]);
 
+    const handleFilter = () => {
+        dispatch(
+            fetchProducts({ keyword: search, category: selectedCategory })
+        );
+    };
     return (
         <Box p={4}>
             <Typography variant="h4" mb={2}>
                 Admin Dashboard
             </Typography>
+            <Box display="flex" gap={2} mb={2}>
+                <TextField
+                    label="Search Products"
+                    variant="outlined"
+                    size="small"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                        if (e.key === "Enter") handleFilter();
+                    }}
+                />
+                <Autocomplete
+                    multiple
+                    options={categories}
+                    getOptionLabel={(option) => option}
+                    value={selectedCategories}
+                    onChange={(e, newValue) => setSelectedCategories(newValue)}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Categories"
+                            size="small"
+                        />
+                    )}
+                    sx={{ minWidth: 200 }}
+                />
+                <Button variant="contained" onClick={handleFilter}>
+                    Filter
+                </Button>
+            </Box>
+
             <Button
                 variant="contained"
                 color="primary"
@@ -149,6 +199,7 @@ const AdminDashboard = () => {
                         <TableCell>Price</TableCell>
                         <TableCell>Category</TableCell>
                         <TableCell>Stock</TableCell>
+                        <TableCell>Sold</TableCell>
                         <TableCell>Actions</TableCell>
                     </TableRow>
                 </TableHead>
@@ -196,6 +247,7 @@ const AdminDashboard = () => {
                                     : product.category}
                             </TableCell>
                             <TableCell>{product.inventory}</TableCell>
+                            <TableCell>{product?.quantitySold || 0}</TableCell>
                             <TableCell>
                                 <IconButton onClick={() => handleOpen(product)}>
                                     <Edit />
