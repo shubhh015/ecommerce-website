@@ -28,7 +28,11 @@ import {
     loadGuestCartFromStorage,
     removeCartItem,
 } from "../../redux/cartSlice";
-import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
+import {
+    createOrder,
+    createRazorpayOrder,
+    setPaymentStatus,
+} from "../../redux/paymentSlice";
 import { getGuestAddresses } from "../../utils/guestAddressUtils";
 import AddressSelector from "./AddressSelector";
 const Cart = () => {
