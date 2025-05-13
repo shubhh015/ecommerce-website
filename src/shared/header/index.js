@@ -31,7 +31,9 @@ const Header = () => {
     const user = useSelector((state) => state.profile?.user);
 
     React.useEffect(() => {
-        dispatch(fetchProfile());
+        if (isAuthenticated) {
+            dispatch(fetchProfile());
+        }
     }, [dispatch]);
 
     const pages = React.useMemo(() => {
@@ -225,6 +227,7 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
+
                     {user?.role !== ROLE.ADMIN && (
                         <Link to="/cart">
                             <IconButton color="primary">
@@ -238,6 +241,7 @@ const Header = () => {
                             </IconButton>
                         </Link>
                     )}
+
 
                     {isAuthenticated && (
                         <IconButton

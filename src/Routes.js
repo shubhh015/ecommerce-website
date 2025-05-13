@@ -6,6 +6,7 @@ import Home from "./app/home";
 import Login from "./app/login";
 import Orders from "./app/orders";
 import ProductPage from "./app/product";
+import ProductDetails from "./app/product/ProductDetails";
 import Profile from "./app/profile";
 import Cart from "./app/shoppingCart";
 import Signup from "./app/signup";
@@ -33,15 +34,20 @@ const routeConfigs = [
         exact: true,
     },
     {
+        path: "/products/:id",
+        RenderComponent: ProductDetails,
+        exact: true,
+    },
+    {
         path: "/aboutUs",
         RenderComponent: AboutUs,
         exact: true,
     },
+
     {
         path: "/cart",
         RenderComponent: Cart,
         exact: true,
-        isAuthReq: true,
         allowed: [ROLE.CONSUMER_USER],
     },
     {
