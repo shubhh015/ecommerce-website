@@ -29,6 +29,7 @@ import {
     removeCartItem,
 } from "../../redux/cartSlice";
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
+import { getGuestAddresses } from "../../utils/guestAddressUtils";
 import AddressSelector from "./AddressSelector";
 const Cart = () => {
     const [selectedAddress, setSelectedAddress] = useState(null);
@@ -36,6 +37,7 @@ const Cart = () => {
     const subTotal = useSelector((state) => state.cart.subTotal);
     const [addressOpen, setAddressOpen] = useState(false);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const addresses = useSelector((state) => state.address.addresses);
     const isAuthenticated = useSelector((state) => !!state.auth.token);
     const totalPrice = isAuthenticated
         ? subTotal
@@ -183,14 +185,10 @@ const Cart = () => {
     const handleCheckout = () => setAddressOpen(true);
 
     const handleAddressSelect = (addressId) => {
-        const addressList = isAuthenticated
-            ? useSelector((state) => state.address.addresses)
-            : getGuestAddresses();
-
+        const addressList = isAuthenticated ? addresses : getGuestAddresses();
         const selectedAddress = addressList.find(
             (addr) => addr._id === addressId
         );
-
         setSelectedAddress(selectedAddress);
         setAddressOpen(false);
         openRazorpayCheckout(selectedAddress);
