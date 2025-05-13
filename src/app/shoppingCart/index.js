@@ -31,6 +31,7 @@ import {
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
 import AddressSelector from "./AddressSelector";
 const Cart = () => {
+    const [selectedAddress, setSelectedAddress] = useState(null);
     const cartItems = useSelector((state) => state.cart.items);
     const subTotal = useSelector((state) => state.cart.subTotal);
     const [addressOpen, setAddressOpen] = useState(false);
@@ -54,7 +55,7 @@ const Cart = () => {
 
     const user = useSelector((state) => state.user);
 
-    const openRazorpayCheckout = async () => {
+    const openRazorpayCheckout = async (shippingAddress) => {
         const amountInPaise = Math.round((totalPrice + shippingCost) * 100);
 
         const resultAction = await dispatch(
@@ -63,6 +64,14 @@ const Cart = () => {
                 currency: "INR",
                 receipt: "receipt#123",
                 products: cartItems,
+                isGuest: !isAuthenticated,
+                shippingAddress: {
+                    address: shippingAddress.address,
+                    city: shippingAddress.city,
+                    postalCode:
+                        shippingAddress.pincode || shippingAddress.postalCode,
+                    country: shippingAddress.country,
+                },
             })
         );
 
@@ -174,10 +183,19 @@ const Cart = () => {
     const handleCheckout = () => setAddressOpen(true);
 
     const handleAddressSelect = (addressId) => {
-        setSelectedAddressId(addressId);
+        const addressList = isAuthenticated
+            ? useSelector((state) => state.address.addresses)
+            : getGuestAddresses();
+
+        const selectedAddress = addressList.find(
+            (addr) => addr._id === addressId
+        );
+
+        setSelectedAddress(selectedAddress);
         setAddressOpen(false);
-        openRazorpayCheckout();
+        openRazorpayCheckout(selectedAddress);
     };
+
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
     return (
@@ -265,7 +283,9 @@ const Cart = () => {
                                                     variant="body2"
                                                     color="text.secondary"
                                                 >
-                                                    ${item.price?.toFixed(2)}
+                                                    $
+                                                    {item.price ||
+                                                        item?.product?.price}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -311,7 +331,10 @@ const Cart = () => {
                                             <TableCell align="right">
                                                 $
                                                 {(
-                                                    item.price * item.quantity
+                                                    Number(
+                                                        item.price ||
+                                                            item?.product?.price
+                                                    ) * Number(item.quantity)
                                                 ).toFixed(2)}
                                             </TableCell>
                                             <TableCell align="center">

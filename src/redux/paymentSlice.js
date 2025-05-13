@@ -3,16 +3,30 @@ import axios from "../utils/api/axios";
 
 export const createOrder = createAsyncThunk(
     "payment/createOrder",
-    async ({ amount, currency, receipt, products }, { rejectWithValue }) => {
+    async (
+        {
+            amount,
+            currency,
+            receipt,
+            products,
+            shippingAddress,
+            isGuest = false,
+        },
+        { rejectWithValue }
+    ) => {
         try {
             const token = localStorage.getItem("token");
+            const endpoint = isGuest
+                ? "/payment/guest/orders"
+                : "/payment/orders";
             const response = await axios.post(
-                "/payment/orders",
+                endpoint,
                 {
                     amount,
                     currency,
                     receipt,
                     products,
+                    shippingAddress,
                 },
                 {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
