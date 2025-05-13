@@ -111,7 +111,10 @@ const Cart = () => {
 
     const handleQuantityChange = async (item, newQuantity) => {
         if (newQuantity < 1) return;
-
+        if (newQuantity >= item?.product?.inventory) {
+            toast.info("Cannot add more than available stock");
+            return;
+        }
         if (isAuthenticated) {
             try {
                 const resultAction = await dispatch(

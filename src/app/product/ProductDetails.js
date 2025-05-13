@@ -46,9 +46,12 @@ const ProductDetails = () => {
         dispatch(fetchProductById(id));
     }, [dispatch, id]);
 
-    // Cart handlers
     const handleAddToCart = async () => {
         if (!product) return;
+        if (quantity >= product.inventory) {
+            toast.info("Cannot add more than available stock");
+            return;
+        }
         if (isAuthenticated) {
             try {
                 const resultAction = await dispatch(
@@ -60,7 +63,6 @@ const ProductDetails = () => {
                 if (addOrUpdateCartItem.rejected.match(resultAction)) {
                     toast.error("Failed to add to cart");
                 } else {
-                    toast.success("Added to cart!");
                     dispatch(fetchCart());
                 }
             } catch (error) {
@@ -73,7 +75,6 @@ const ProductDetails = () => {
                     quantity: quantity + 1,
                 })
             );
-            toast.success("Added to cart!");
         }
     };
 
@@ -100,7 +101,6 @@ const ProductDetails = () => {
                     if (removeCartItem.rejected.match(resultAction)) {
                         toast.error("Failed to remove item");
                     } else {
-                        toast.success("Removed from cart");
                         dispatch(fetchCart());
                     }
                 }
@@ -115,10 +115,8 @@ const ProductDetails = () => {
                         quantity: quantity - 1,
                     })
                 );
-                toast.info("Updated cart quantity");
             } else if (quantity === 1) {
                 dispatch(guestRemoveCartItem(product._id));
-                toast.success("Removed from cart");
             }
         }
     };
@@ -128,7 +126,7 @@ const ProductDetails = () => {
     if (!product) return null;
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ my: 4 }}>
             <IconButton
                 onClick={() => navigate(-1)}
                 sx={{ mb: 2 }}
@@ -137,7 +135,6 @@ const ProductDetails = () => {
                 <ArrowBackIcon />
             </IconButton>
             <Grid container spacing={4}>
-                {/* Product Image */}
                 <Grid item xs={12} md={6}>
                     <Box
                         component="img"
@@ -152,8 +149,6 @@ const ProductDetails = () => {
                         }}
                     />
                 </Grid>
-
-                {/* Product Info */}
                 <Grid item xs={12} md={6}>
                     <Typography variant="h4" fontWeight={700} gutterBottom>
                         {product.name}

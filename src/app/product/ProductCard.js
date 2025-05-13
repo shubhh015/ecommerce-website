@@ -37,6 +37,10 @@ const ProductCard = ({ product }) => {
     const isActive = product?.isActive ?? true;
 
     const handleAddToCart = async () => {
+        if (quantity >= product.inventory) {
+            toast.info("Cannot add more than available stock");
+            return;
+        }
         if (isAuthenticated) {
             try {
                 const resultAction = await dispatch(
