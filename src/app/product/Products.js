@@ -1,7 +1,7 @@
 import { Box, Container, Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import { toast } from "react-toastify";
 import { fetchCart } from "../../redux/cartSlice";
 import { fetchProducts } from "../../redux/productSlice";
 import ProductCard from "./ProductCard";
@@ -11,12 +11,29 @@ const Products = () => {
     const dispatch = useDispatch();
     const { products, loading, error } = useSelector((state) => state.products);
     const [selectedTag, setSelectedTag] = useState("Best Seller");
-    useEffect(() => {
-        dispatch(fetchProducts({ category: selectedTag }));
-    }, [dispatch, selectedTag]);
+    const loadProducts = async () => {
+        const resultAction = await dispatch(
+            fetchProducts({ keyword: "", category: selectedTag })
+        );
+        if (fetchProducts.rejected.match(resultAction)) {
+            toast.error("Failed to fetch products");
+        }
+    };
 
     useEffect(() => {
-        dispatch(fetchCart());
+        loadProducts();
+    }, []);
+
+    useEffect(() => {
+        const loadCart = async () => {
+            const resultAction = await dispatch(fetchCart());
+            if (fetchCart.rejected.match(resultAction)) {
+                toast.error(
+                    resultAction.payload?.message || "Failed to load cart"
+                );
+            }
+        };
+        loadCart();
     }, [dispatch]);
     const handleTagSelect = (tag) => {
         setSelectedTag(tag);

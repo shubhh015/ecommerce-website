@@ -13,6 +13,8 @@ import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { fetchCart } from "../../redux/cartSlice";
 import { fetchProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
 const Header = () => {
@@ -35,7 +37,7 @@ const Header = () => {
     }, [dispatch]);
 
     const pages = React.useMemo(() => {
-        if (user?.role === ROLE.ADMIN) {
+        if (user?.role === ROLE.ADMIN && isAuthenticated) {
             return [
                 { title: "Dashboard", path: "/admin/dashboard" },
                 { title: "AboutUs", path: "/aboutUs" },
@@ -84,6 +86,19 @@ const Header = () => {
             window.removeEventListener("scroll", handleScroll);
         };
     }, [lastScrollY]);
+    React.useEffect(() => {
+        const loadCart = async () => {
+            const resultAction = await dispatch(fetchCart());
+            if (fetchCart.rejected.match(resultAction)) {
+                toast.error(
+                    resultAction.payload?.message || "Failed to load cart"
+                );
+            }
+        };
+        if (isAuthenticated) {
+            loadCart();
+        }
+    }, [dispatch]);
     const cartItems = useSelector((state) => state.cart.items);
     const totalItems =
         cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
@@ -212,20 +227,22 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-                    {(isAuthenticated && user?.role !== ROLE.ADMIN) ||
-                        (!isAuthenticated && (
-                            <Link to="/cart">
-                                <IconButton color="primary">
-                                    <Badge
-                                        badgeContent={totalItems}
-                                        color="secondary"
-                                        showZero
-                                    >
-                                        <ShoppingCartOutlinedIcon />
-                                    </Badge>
-                                </IconButton>
-                            </Link>
-                        ))}
+
+                    {user?.role !== ROLE.ADMIN && (
+                        <Link to="/cart">
+                            <IconButton color="primary">
+                                <Badge
+                                    badgeContent={totalItems}
+                                    color="secondary"
+                                    showZero
+                                >
+                                    <ShoppingCartOutlinedIcon />
+                                </Badge>
+                            </IconButton>
+                        </Link>
+                    )}
+
+
                     {isAuthenticated && (
                         <IconButton
                             color="primary"

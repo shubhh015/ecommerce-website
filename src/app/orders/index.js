@@ -17,8 +17,8 @@ import {
 } from "@mui/material";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import { fetchMyOrders } from "../../redux/orderSlice";
-
 const statusIcon = (status) => {
     switch (status.toLowerCase()) {
         case "delivered":
@@ -62,7 +62,15 @@ const Orders = () => {
 
     useEffect(() => {
         if (status === "idle") {
-            dispatch(fetchMyOrders());
+            const fetchOrders = async () => {
+                const resultAction = await dispatch(fetchMyOrders());
+                if (fetchMyOrders.rejected.match(resultAction)) {
+                    toast.error("Failed to load orders");
+                } else {
+                    toast.success("Orders loaded successfully");
+                }
+            };
+            fetchOrders();
         }
     }, [dispatch, status]);
 

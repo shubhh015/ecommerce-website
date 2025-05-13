@@ -19,6 +19,7 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { login } from "../../redux/authSlice";
 import { fetchProfile } from "../../redux/profileSlice";
 import {
@@ -56,15 +57,19 @@ const Login = () => {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
             const resultAction = await dispatch(login(formData));
             if (login.fulfilled.match(resultAction)) {
                 dispatch(fetchProfile());
                 navigate("/products");
             } else {
-                console.error("Login failed");
+                toast.error("Login failed. Please check your credentials.");
             }
         } catch (err) {
+            toast.error(
+                "An unexpected error occurred. Please try again later."
+            );
             console.error("Login error: ", err);
         }
     };
