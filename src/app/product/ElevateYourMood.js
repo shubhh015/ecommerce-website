@@ -10,7 +10,6 @@ import {
     Typography,
 } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
-import React from "react";
 import { comfort } from "../../resources/js/images";
 
 const ElevateYourMood = () => {
@@ -33,7 +32,12 @@ const ElevateYourMood = () => {
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <Typography variant="h3" fontWeight={"600"} gutterBottom>
+                    <Typography
+                        variant="h4"
+                        component="h1"
+                        fontWeight={"600"}
+                        gutterBottom
+                    >
                         Elevate Your Mood with Comfortable Furniture
                     </Typography>
                     <Typography variant="body1" paragraph>

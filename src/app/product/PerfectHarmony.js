@@ -10,7 +10,6 @@ import {
     Grid,
     Typography,
 } from "@mui/material";
-import React from "react";
 import { packageIcon } from "../../resources/js/icons";
 import { PerfectHarmonyBg } from "../../resources/js/images";
 const PerfectHarmony = () => {
@@ -47,11 +46,12 @@ const PerfectHarmony = () => {
                         </Typography>
                         <Box
                             display={"flex"}
+                            flexDirection={{ xs: "column", md: "row" }}
                             alignItems={"center"}
+                            flexWrap={"wrap"}
                             justifyItems={"center"}
                             marginTop={3}
                             textAlign={"center"}
-                            width={"100%"}
                         >
                             <Button
                                 variant="outlined"

@@ -9,7 +9,6 @@ import {
     ListItemIcon,
     Typography,
 } from "@mui/material";
-import React from "react";
 import { space } from "../../resources/js/images";
 
 const ElevateYourSpace = () => {
@@ -26,7 +25,8 @@ const ElevateYourSpace = () => {
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={6}>
                         <Typography
-                            variant="h3"
+                            variant="h4"
+                            component="h1"
                             fontWeight={"600"}
                             gutterBottom
                         >
