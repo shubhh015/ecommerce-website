@@ -9,8 +9,8 @@ import {
     IconButton,
     Typography,
 } from "@mui/material";
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
     addOrUpdateCartItem,
     fetchCart,
@@ -20,7 +20,7 @@ import {
 const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
-
+    const navigate = useNavigate();
     const productInCart = cartItems.find(
         (item) => item.product?._id === product?._id
     );
@@ -49,7 +49,10 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <Card sx={{ maxWidth: 345, margin: 2 }}>
+        <Card
+            sx={{ maxWidth: 345, margin: 2 }}
+            onClick={() => navigate(`/products/${product._id}`)}
+        >
             <CardMedia
                 component="img"
                 height="200"

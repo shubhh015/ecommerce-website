@@ -1,5 +1,5 @@
 import { Box, Container, Grid, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { fetchCart } from "../../redux/cartSlice";
@@ -61,7 +61,9 @@ const Products = () => {
             </Box>
 
             {loading && <Typography>Loading products...</Typography>}
-            {error && <Typography color="error">Error: {error}</Typography>}
+            {error && (
+                <Typography color="error">Products are not found</Typography>
+            )}
 
             <Grid
                 container

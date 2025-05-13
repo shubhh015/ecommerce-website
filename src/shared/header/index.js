@@ -29,7 +29,9 @@ const Header = () => {
     const user = useSelector((state) => state.profile?.user);
 
     React.useEffect(() => {
-        dispatch(fetchProfile());
+        if (isAuthenticated) {
+            dispatch(fetchProfile());
+        }
     }, [dispatch]);
 
     const pages = React.useMemo(() => {
@@ -210,19 +212,20 @@ const Header = () => {
                             </Button>
                         ))}
                     </Box>
-                    {isAuthenticated && user?.role !== ROLE.ADMIN && (
-                        <Link to="/cart">
-                            <IconButton color="primary">
-                                <Badge
-                                    badgeContent={totalItems}
-                                    color="secondary"
-                                    showZero
-                                >
-                                    <ShoppingCartOutlinedIcon />
-                                </Badge>
-                            </IconButton>
-                        </Link>
-                    )}
+                    {(isAuthenticated && user?.role !== ROLE.ADMIN) ||
+                        (!isAuthenticated && (
+                            <Link to="/cart">
+                                <IconButton color="primary">
+                                    <Badge
+                                        badgeContent={totalItems}
+                                        color="secondary"
+                                        showZero
+                                    >
+                                        <ShoppingCartOutlinedIcon />
+                                    </Badge>
+                                </IconButton>
+                            </Link>
+                        ))}
                     {isAuthenticated && (
                         <IconButton
                             color="primary"

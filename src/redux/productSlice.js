@@ -15,7 +15,19 @@ export const fetchProducts = createAsyncThunk(
         }
     }
 );
-
+export const fetchProductById = createAsyncThunk(
+    "products/fetchProductById",
+    async (id, thunkAPI) => {
+        try {
+            const response = await axios.get(`/products/${id}`);
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data || { message: error.message }
+            );
+        }
+    }
+);
 export const addProduct = createAsyncThunk(
     "products/addProduct",
     async (productData, thunkAPI) => {
@@ -109,6 +121,19 @@ const productSlice = createSlice({
                 state.products = state.products.filter(
                     (p) => p._id !== action.payload
                 );
+            })
+            .addCase(fetchProductById.pending, (state) => {
+                state.loading = true;
+                state.selectedProduct = null;
+                state.error = null;
+            })
+            .addCase(fetchProductById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.selectedProduct = action.payload;
+            })
+            .addCase(fetchProductById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     },
 });
