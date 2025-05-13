@@ -1,5 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../utils/api/axios";
+export const createRazorpayOrder = createAsyncThunk(
+    "payment/createRazorpayOrder",
+    async ({ amount, currency }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post("/payment/razorpay-order", {
+                amount,
+                currency,
+            });
+            return response.data.razorpayOrder;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
 
 export const createOrder = createAsyncThunk(
     "payment/createOrder",
@@ -7,7 +21,7 @@ export const createOrder = createAsyncThunk(
         {
             amount,
             currency,
-            receipt,
+
             products,
             shippingAddress,
             isGuest = false,
@@ -24,7 +38,7 @@ export const createOrder = createAsyncThunk(
                 {
                     amount,
                     currency,
-                    receipt,
+
                     products,
                     shippingAddress,
                 },
@@ -43,6 +57,7 @@ const initialState = {
     paymentMethod: "Credit Card",
     paymentStatus: null,
     order: null,
+    razorpayOrder: null,
     loading: false,
     error: null,
 };
@@ -57,9 +72,28 @@ const paymentSlice = createSlice({
         setPaymentStatus: (state, action) => {
             state.paymentStatus = action.payload;
         },
+        clearPayment: (state) => {
+            state.paymentStatus = null;
+            state.order = null;
+            state.razorpayOrder = null;
+            state.error = null;
+        },
     },
     extraReducers: (builder) => {
         builder
+            .addCase(createRazorpayOrder.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.razorpayOrder = null;
+            })
+            .addCase(createRazorpayOrder.fulfilled, (state, action) => {
+                state.loading = false;
+                state.razorpayOrder = action.payload;
+            })
+            .addCase(createRazorpayOrder.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
             .addCase(createOrder.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -76,5 +110,6 @@ const paymentSlice = createSlice({
     },
 });
 
-export const { setPaymentMethod, setPaymentStatus } = paymentSlice.actions;
+export const { setPaymentMethod, setPaymentStatus, clearPayment } =
+    paymentSlice.actions;
 export default paymentSlice.reducer;

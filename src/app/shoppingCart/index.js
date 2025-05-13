@@ -60,63 +60,83 @@ const Cart = () => {
     const openRazorpayCheckout = async (shippingAddress) => {
         const amountInPaise = Math.round((totalPrice + shippingCost) * 100);
 
-        const resultAction = await dispatch(
-            createOrder({
+        const razorpayOrderRes = await dispatch(
+            createRazorpayOrder({
                 amount: amountInPaise / 100,
                 currency: "INR",
-                receipt: "receipt#123",
-                products: cartItems,
-                isGuest: !isAuthenticated,
-                shippingAddress: {
-                    address: shippingAddress.address,
-                    city: shippingAddress.city,
-                    postalCode:
-                        shippingAddress.pincode || shippingAddress.postalCode,
-                    country: shippingAddress.country,
-                },
             })
         );
 
-        if (createOrder.fulfilled.match(resultAction)) {
-            const orderData = resultAction.payload;
+        if (!createRazorpayOrder.fulfilled.match(razorpayOrderRes)) {
+            toast.error("Failed to initiate payment. Try again later.");
+            return;
+        }
 
-            const options = {
-                key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-                mode: "test",
-                amount: orderData.razorpayOrder.amount,
-                currency: orderData.razorpayOrder.currency,
-                name: "Furniture",
-                description: "Test Transaction",
-                order_id: orderData.razorpayOrder.id,
-                handler: function (response) {
-                    alert(
+        const razorpayOrder = razorpayOrderRes.payload;
+
+        const options = {
+            key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: "Furniture",
+            description: "Test Transaction",
+            order_id: razorpayOrder.id,
+            handler: async function (response) {
+                const resultAction = await dispatch(
+                    createOrder({
+                        amount: razorpayOrder.amount / 100,
+                        currency: razorpayOrder.currency,
+                        products: cartItems,
+                        isGuest: !isAuthenticated,
+                        shippingAddress: {
+                            address: shippingAddress.address,
+                            city: shippingAddress.city,
+                            postalCode:
+                                shippingAddress.pincode ||
+                                shippingAddress.postalCode,
+                            country: shippingAddress.country,
+                        },
+                        paymentInfo: {
+                            id: response.razorpay_payment_id,
+                            order_id: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            method: "razorpay",
+                            status: "paid",
+                        },
+                    })
+                );
+
+                if (createOrder.fulfilled.match(resultAction)) {
+                    toast.success(
                         "Payment successful: " + response.razorpay_payment_id
                     );
                     dispatch(setPaymentStatus("success"));
-                    dispatch(emptyCart());
-                },
-                prefill: {
-                    name: user?.name || "",
-                    email: user?.email || "",
-                    contact: user?.phone || "",
-                },
-                theme: {
-                    color: "#3399cc",
-                },
-            };
+                    handleEmptyCart();
+                } else {
+                    toast.error(
+                        "Order creation failed after payment. Please contact support."
+                    );
+                }
+            },
+            prefill: {
+                name: user?.name || "",
+                email: user?.email || "",
+                contact: user?.phone || "",
+            },
+            theme: {
+                color: "#3399cc",
+            },
+        };
 
-            const rzp = new window.Razorpay(options);
-            rzp.open();
+        const rzp = new window.Razorpay(options);
+        rzp.open();
 
-            rzp.on("payment.failed", function (response) {
-                alert("Payment failed: " + response.error.description);
-                dispatch(setPaymentStatus("failed"));
-            });
-            handleEmptyCart();
-        } else {
-            alert("Failed to create order. Try again later.");
-        }
+        rzp.on("payment.failed", function (response) {
+            toast.error("Payment failed: " + response.error.description);
+            dispatch(setPaymentStatus("failed"));
+        });
     };
+
     const [promoCode, setPromoCode] = useState("");
     const [shippingCost, setShippingCost] = useState(5);
 
@@ -324,7 +344,11 @@ const Cart = () => {
                                                 </Box>
                                             </TableCell>
                                             <TableCell align="right">
-                                                ${item.price?.toFixed(2)}
+                                                $
+                                                {item.price?.toFixed(2) ||
+                                                    item?.product?.price?.toFixed(
+                                                        2
+                                                    )}
                                             </TableCell>
                                             <TableCell align="right">
                                                 $
