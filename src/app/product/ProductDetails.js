@@ -1,3 +1,7 @@
+import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import RemoveIcon from "@mui/icons-material/Remove";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import {
     Box,
     Button,
@@ -5,11 +9,20 @@ import {
     Container,
     Divider,
     Grid,
+    IconButton,
     Typography,
 } from "@mui/material";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import {
+    addOrUpdateCartItem,
+    fetchCart,
+    guestAddOrUpdateCartItem,
+    guestRemoveCartItem,
+    removeCartItem,
+} from "../../redux/cartSlice";
 import { fetchProductById } from "../../redux/productSlice";
 
 const ProductDetails = () => {
@@ -21,9 +34,94 @@ const ProductDetails = () => {
         error,
     } = useSelector((state) => state.products);
 
+    const cartItems = useSelector((state) => state.cart.items);
+    const isAuthenticated = useSelector((state) => !!state.auth.token);
+    const navigate = useNavigate();
+    const productInCart = cartItems.find(
+        (item) => item.product?._id === product?._id
+    );
+    const quantity = productInCart ? productInCart.quantity : 0;
+
     useEffect(() => {
         dispatch(fetchProductById(id));
     }, [dispatch, id]);
+
+    // Cart handlers
+    const handleAddToCart = async () => {
+        if (!product) return;
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(
+                    addOrUpdateCartItem({
+                        product: product,
+                        quantity: quantity + 1,
+                    })
+                );
+                if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                    toast.error("Failed to add to cart");
+                } else {
+                    toast.success("Added to cart!");
+                    dispatch(fetchCart());
+                }
+            } catch (error) {
+                toast.error("An error occurred while adding to cart");
+            }
+        } else {
+            dispatch(
+                guestAddOrUpdateCartItem({
+                    product,
+                    quantity: quantity + 1,
+                })
+            );
+            toast.success("Added to cart!");
+        }
+    };
+
+    const handleRemoveFromCart = async () => {
+        if (!product) return;
+        if (isAuthenticated) {
+            try {
+                if (quantity > 1) {
+                    const resultAction = await dispatch(
+                        addOrUpdateCartItem({
+                            product: product,
+                            quantity: quantity - 1,
+                        })
+                    );
+                    if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                        toast.error("Failed to update cart");
+                    } else {
+                        dispatch(fetchCart());
+                    }
+                } else if (quantity === 1) {
+                    const resultAction = await dispatch(
+                        removeCartItem(product?._id)
+                    );
+                    if (removeCartItem.rejected.match(resultAction)) {
+                        toast.error("Failed to remove item");
+                    } else {
+                        toast.success("Removed from cart");
+                        dispatch(fetchCart());
+                    }
+                }
+            } catch (error) {
+                toast.error("An error occurred while updating the cart");
+            }
+        } else {
+            if (quantity > 1) {
+                dispatch(
+                    guestAddOrUpdateCartItem({
+                        product,
+                        quantity: quantity - 1,
+                    })
+                );
+                toast.info("Updated cart quantity");
+            } else if (quantity === 1) {
+                dispatch(guestRemoveCartItem(product._id));
+                toast.success("Removed from cart");
+            }
+        }
+    };
 
     if (loading) return <Typography>Loading...</Typography>;
     if (error) return <Typography color="error">Products Not Found</Typography>;
@@ -31,6 +129,13 @@ const ProductDetails = () => {
 
     return (
         <Container maxWidth="md" sx={{ mt: 4 }}>
+            <IconButton
+                onClick={() => navigate(-1)}
+                sx={{ mb: 2 }}
+                aria-label="Go back"
+            >
+                <ArrowBackIcon />
+            </IconButton>
             <Grid container spacing={4}>
                 {/* Product Image */}
                 <Grid item xs={12} md={6}>
@@ -82,14 +187,46 @@ const ProductDetails = () => {
                             : "Out of Stock"}
                     </Typography>
                     <Box mt={3}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            size="large"
-                            disabled={product.inventory === 0}
-                        >
-                            Add to Cart
-                        </Button>
+                        {product.inventory === 0 ? (
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                size="large"
+                                disabled
+                            >
+                                Out of Stock
+                            </Button>
+                        ) : quantity === 0 ? (
+                            <IconButton
+                                onClick={handleAddToCart}
+                                color="primary"
+                                size="large"
+                                sx={{
+                                    bgcolor: "#E1E1E1",
+                                    "&:hover": { bgcolor: "#d5d5d5" },
+                                }}
+                            >
+                                <ShoppingCartOutlinedIcon />
+                            </IconButton>
+                        ) : (
+                            <Box display="flex" alignItems="center">
+                                <IconButton
+                                    onClick={handleRemoveFromCart}
+                                    color="secondary"
+                                >
+                                    <RemoveIcon />
+                                </IconButton>
+                                <Typography variant="body1" mx={1}>
+                                    {quantity}
+                                </Typography>
+                                <IconButton
+                                    onClick={handleAddToCart}
+                                    color="primary"
+                                >
+                                    <AddIcon />
+                                </IconButton>
+                            </Box>
+                        )}
                     </Box>
                 </Grid>
             </Grid>

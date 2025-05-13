@@ -14,7 +14,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -22,28 +22,36 @@ import {
     addOrUpdateCartItem,
     emptyCart,
     fetchCart,
+    guestAddOrUpdateCartItem,
+    guestClearCart,
+    guestRemoveCartItem,
+    loadGuestCartFromStorage,
     removeCartItem,
 } from "../../redux/cartSlice";
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
 import AddressSelector from "./AddressSelector";
 const Cart = () => {
     const cartItems = useSelector((state) => state.cart.items);
-    const totalPrice = useSelector((state) => state.cart.subTotal);
+    const subTotal = useSelector((state) => state.cart.subTotal);
     const [addressOpen, setAddressOpen] = useState(false);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const isAuthenticated = useSelector((state) => !!state.auth.token);
+    const totalPrice = isAuthenticated
+        ? subTotal
+        : cartItems.reduce(
+              (sum, item) => sum + item.product.price * item.quantity,
+              0
+          );
 
     const dispatch = useDispatch();
     useEffect(() => {
-        const loadCart = async () => {
-            const resultAction = await dispatch(fetchCart());
-            if (fetchCart.rejected.match(resultAction)) {
-                toast.error(
-                    resultAction.payload?.message || "Failed to load cart"
-                );
-            }
-        };
-        loadCart();
-    }, [dispatch]);
+        if (isAuthenticated) {
+            dispatch(fetchCart());
+        } else {
+            dispatch(loadGuestCartFromStorage());
+        }
+    }, [dispatch, isAuthenticated]);
+
     const user = useSelector((state) => state.user);
 
     const openRazorpayCheckout = async () => {
@@ -93,6 +101,7 @@ const Cart = () => {
                 alert("Payment failed: " + response.error.description);
                 dispatch(setPaymentStatus("failed"));
             });
+            handleEmptyCart();
         } else {
             alert("Failed to create order. Try again later.");
         }
@@ -100,20 +109,64 @@ const Cart = () => {
     const [promoCode, setPromoCode] = useState("");
     const [shippingCost, setShippingCost] = useState(5);
 
-    const handleQuantityChange = (item, newQuantity) => {
+    const handleQuantityChange = async (item, newQuantity) => {
         if (newQuantity < 1) return;
 
-        dispatch(
-            addOrUpdateCartItem({
-                product: item?.product,
-                quantity: newQuantity,
-            })
-        ).then(() => dispatch(fetchCart()));
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(
+                    addOrUpdateCartItem({
+                        product: item?.product,
+                        quantity: newQuantity,
+                    })
+                );
+                if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                    toast.error("Failed to update cart");
+                } else {
+                    dispatch(fetchCart());
+                }
+            } catch {
+                toast.error("An error occurred while updating the cart");
+            }
+        } else {
+            dispatch(
+                guestAddOrUpdateCartItem({
+                    product: item?.product,
+                    quantity: newQuantity,
+                })
+            );
+        }
     };
 
-    const handleRemove = (item) => {
+    const handleRemove = async (item) => {
         const productId = item.product?._id;
-        dispatch(removeCartItem(productId));
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(removeCartItem(productId));
+                if (removeCartItem.rejected.match(resultAction)) {
+                    toast.error("Failed to remove item");
+                }
+            } catch {
+                toast.error("An error occurred while removing the item");
+            }
+        } else {
+            dispatch(guestRemoveCartItem(productId));
+        }
+    };
+
+    const handleEmptyCart = async () => {
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(emptyCart());
+                if (emptyCart.rejected.match(resultAction)) {
+                    toast.error("Failed to empty cart");
+                }
+            } catch {
+                toast.error("An error occurred while emptying the cart");
+            }
+        } else {
+            dispatch(guestClearCart());
+        }
     };
     const handleCheckout = () => setAddressOpen(true);
 

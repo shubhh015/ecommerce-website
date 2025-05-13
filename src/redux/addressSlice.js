@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../utils/api/axios";
 
-// Fetch addresses
 export const fetchAddresses = createAsyncThunk(
     "address/fetchAddresses",
     async (_, { rejectWithValue, getState }) => {
@@ -19,7 +18,6 @@ export const fetchAddresses = createAsyncThunk(
     }
 );
 
-// Add address
 export const addAddress = createAsyncThunk(
     "address/addAddress",
     async (data, { rejectWithValue, getState }) => {

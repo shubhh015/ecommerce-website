@@ -11,30 +11,54 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addAddress, fetchAddresses } from "../../redux/addressSlice";
+import {
+    addGuestAddress,
+    getGuestAddresses,
+} from "../../utils/guestAddressUtils";
 
 const AddressSelector = ({ open, onClose, onSelect }) => {
     const dispatch = useDispatch();
     const addresses = useSelector((state) => state.address.addresses);
+    const isAuthenticated = useSelector((state) => !!state.auth.token);
+
     const [selected, setSelected] = useState("");
     const [showAdd, setShowAdd] = useState(false);
     const [form, setForm] = useState({});
+    const [guestAddresses, setGuestAddresses] = useState([]);
 
+    // Fetch addresses on open
     useEffect(() => {
-        if (open) dispatch(fetchAddresses());
-    }, [open, dispatch]);
+        if (open) {
+            if (isAuthenticated) {
+                dispatch(fetchAddresses());
+            } else {
+                setGuestAddresses(getGuestAddresses());
+            }
+        }
+    }, [open, dispatch, isAuthenticated]);
 
     const handleAdd = () => {
-        dispatch(addAddress(form)).then((action) => {
-            if (addAddress.fulfilled.match(action)) {
-                setShowAdd(false);
-                setForm({});
-                setSelected(action.payload[action.payload.length - 1]._id);
-            }
-        });
+        if (isAuthenticated) {
+            dispatch(addAddress(form)).then((action) => {
+                if (addAddress.fulfilled.match(action)) {
+                    setShowAdd(false);
+                    setForm({});
+                    setSelected(action.payload[action.payload.length - 1]._id);
+                }
+            });
+        } else {
+            const updated = addGuestAddress(form);
+            setGuestAddresses(updated);
+            setShowAdd(false);
+            setForm({});
+            setSelected(updated[updated.length - 1]._id);
+        }
     };
+
+    const displayAddresses = isAuthenticated ? addresses : guestAddresses;
 
     return (
         <Dialog open={open} onClose={onClose}>
@@ -44,7 +68,7 @@ const AddressSelector = ({ open, onClose, onSelect }) => {
                     value={selected}
                     onChange={(e) => setSelected(e.target.value)}
                 >
-                    {addresses.map((addr) => (
+                    {displayAddresses.map((addr) => (
                         <FormControlLabel
                             key={addr._id}
                             value={addr._id}
@@ -99,7 +123,10 @@ const AddressSelector = ({ open, onClose, onSelect }) => {
                             sx={{ mb: 1 }}
                             value={form.city || ""}
                             onChange={(e) =>
-                                setForm((f) => ({ ...f, city: e.target.value }))
+                                setForm((f) => ({
+                                    ...f,
+                                    city: e.target.value,
+                                }))
                             }
                         />
                         <TextField
