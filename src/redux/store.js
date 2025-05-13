@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import addressReducer from "./addressSlice";
 import authReducer from "./authSlice";
 import cartReducer from "./cartSlice";
 import orderReducer from "./orderSlice";
@@ -15,6 +16,7 @@ const store = configureStore({
         payment: paymentReducer,
         ui: uiReducer,
         profile: profileReducer,
+        address: addressReducer,
     },
 });
 

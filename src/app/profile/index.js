@@ -19,18 +19,27 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { logout } from "../../redux/authSlice";
 import { fetchMyOrders } from "../../redux/orderSlice";
-import { fetchProfile } from "../../redux/profileSlice";
+import { fetchProfile, resetProfile } from "../../redux/profileSlice";
 import { ROLE } from "../../utils/constants/role";
+import ChangePasswordModal from "./ChangePasswordModal";
 import EditProfileModal from "./EditProfileModal";
-
 const ProfilePage = () => {
     const dispatch = useDispatch();
     const [editOpen, setEditOpen] = useState(false);
-
+    const [passwordOpen, setPasswordOpen] = useState(false);
     useEffect(() => {
-        dispatch(fetchProfile());
+        const fetchData = async () => {
+            const resultAction = await dispatch(fetchProfile());
+            if (fetchProfile.rejected.match(resultAction)) {
+                toast.error("Failed to load profile");
+            } else {
+                toast.success("Profile loaded successfully");
+            }
+        };
+        fetchData();
     }, [dispatch]);
 
     const user = useSelector((state) => state.profile?.user);
@@ -49,6 +58,7 @@ const ProfilePage = () => {
 
     const handleLogout = () => {
         dispatch(logout());
+        dispatch(resetProfile());
         navigate("/login");
     };
 
@@ -214,6 +224,17 @@ const ProfilePage = () => {
                     )}
                 </Paper>
             )}
+            <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setPasswordOpen(true)}
+            >
+                Change Password
+            </Button>
+            <ChangePasswordModal
+                open={passwordOpen}
+                onClose={() => setPasswordOpen(false)}
+            />
             <EditProfileModal
                 open={editOpen}
                 onClose={() => setEditOpen(false)}

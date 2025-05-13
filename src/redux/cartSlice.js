@@ -1,6 +1,17 @@
 // cartSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../utils/api/axios";
+const loadGuestCart = () => {
+    try {
+        const data = localStorage.getItem("guest_cart");
+        return data ? JSON.parse(data) : [];
+    } catch {
+        return [];
+    }
+};
+const saveGuestCart = (items) => {
+    localStorage.setItem("guest_cart", JSON.stringify(items));
+};
 
 export const fetchCart = createAsyncThunk(
     "cart/fetchCart",
@@ -118,10 +129,38 @@ const initialState = {
 const cartSlice = createSlice({
     name: "cart",
     initialState,
-    reducers: {},
+    reducers: {
+        guestAddOrUpdateCartItem: (state, action) => {
+            const { product, quantity } = action.payload;
+            const idx = state.items.findIndex(
+                (item) => item.product._id === product._id
+            );
+            if (quantity <= 0) {
+                if (idx !== -1) state.items.splice(idx, 1);
+            } else if (idx !== -1) {
+                state.items[idx].quantity = quantity;
+            } else {
+                state.items.push({ product, quantity });
+            }
+            saveGuestCart(state.items);
+        },
+        guestRemoveCartItem: (state, action) => {
+            state.items = state.items.filter(
+                (item) => item.product._id !== action.payload
+            );
+            saveGuestCart(state.items);
+        },
+        guestClearCart: (state) => {
+            state.items = [];
+            saveGuestCart([]);
+        },
+
+        loadGuestCartFromStorage: (state) => {
+            state.items = loadGuestCart();
+        },
+    },
     extraReducers: (builder) => {
         builder
-
             .addCase(fetchCart.pending, (state) => {
                 state.status = "loading";
             })
@@ -167,5 +206,10 @@ const cartSlice = createSlice({
             });
     },
 });
-
+export const {
+    guestAddOrUpdateCartItem,
+    guestRemoveCartItem,
+    guestClearCart,
+    loadGuestCartFromStorage,
+} = cartSlice.actions;
 export default cartSlice.reducer;
