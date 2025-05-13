@@ -11,6 +11,7 @@ const Products = () => {
     const dispatch = useDispatch();
     const { products, loading, error } = useSelector((state) => state.products);
     const [selectedTag, setSelectedTag] = useState("Best Seller");
+    const isAuthenticated = useSelector((state) => !!state.auth.token);
     const loadProducts = async () => {
         const resultAction = await dispatch(
             fetchProducts({ keyword: "", category: selectedTag })
@@ -33,7 +34,9 @@ const Products = () => {
                 );
             }
         };
-        loadCart();
+        if (isAuthenticated) {
+            loadCart();
+        }
     }, [dispatch]);
     const handleTagSelect = (tag) => {
         setSelectedTag(tag);

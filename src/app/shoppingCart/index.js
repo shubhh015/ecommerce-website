@@ -14,7 +14,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -22,106 +22,198 @@ import {
     addOrUpdateCartItem,
     emptyCart,
     fetchCart,
+    guestAddOrUpdateCartItem,
+    guestClearCart,
+    guestRemoveCartItem,
+    loadGuestCartFromStorage,
     removeCartItem,
 } from "../../redux/cartSlice";
 import { createOrder, setPaymentStatus } from "../../redux/paymentSlice";
+import { getGuestAddresses } from "../../utils/guestAddressUtils";
 import AddressSelector from "./AddressSelector";
 const Cart = () => {
+    const [selectedAddress, setSelectedAddress] = useState(null);
     const cartItems = useSelector((state) => state.cart.items);
-    const totalPrice = useSelector((state) => state.cart.subTotal);
+    const subTotal = useSelector((state) => state.cart.subTotal);
     const [addressOpen, setAddressOpen] = useState(false);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const addresses = useSelector((state) => state.address.addresses);
+    const isAuthenticated = useSelector((state) => !!state.auth.token);
+    const totalPrice = isAuthenticated
+        ? subTotal
+        : cartItems.reduce(
+              (sum, item) => sum + item.product.price * item.quantity,
+              0
+          );
 
     const dispatch = useDispatch();
     useEffect(() => {
-        const loadCart = async () => {
-            const resultAction = await dispatch(fetchCart());
-            if (fetchCart.rejected.match(resultAction)) {
-                toast.error(
-                    resultAction.payload?.message || "Failed to load cart"
-                );
-            }
-        };
-        loadCart();
-    }, [dispatch]);
+        if (isAuthenticated) {
+            dispatch(fetchCart());
+        } else {
+            dispatch(loadGuestCartFromStorage());
+        }
+    }, [dispatch, isAuthenticated]);
+
     const user = useSelector((state) => state.user);
 
-    const openRazorpayCheckout = async () => {
+    const openRazorpayCheckout = async (shippingAddress) => {
         const amountInPaise = Math.round((totalPrice + shippingCost) * 100);
 
-        const resultAction = await dispatch(
-            createOrder({
+        const razorpayOrderRes = await dispatch(
+            createRazorpayOrder({
                 amount: amountInPaise / 100,
                 currency: "INR",
-                receipt: "receipt#123",
-                products: cartItems,
             })
         );
 
-        if (createOrder.fulfilled.match(resultAction)) {
-            const orderData = resultAction.payload;
+        if (!createRazorpayOrder.fulfilled.match(razorpayOrderRes)) {
+            toast.error("Failed to initiate payment. Try again later.");
+            return;
+        }
 
-            const options = {
-                key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-                mode: "test",
-                amount: orderData.razorpayOrder.amount,
-                currency: orderData.razorpayOrder.currency,
-                name: "Furniture",
-                description: "Test Transaction",
-                order_id: orderData.razorpayOrder.id,
-                handler: function (response) {
-                    alert(
+        const razorpayOrder = razorpayOrderRes.payload;
+
+        const options = {
+            key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: "Furniture",
+            description: "Test Transaction",
+            order_id: razorpayOrder.id,
+            handler: async function (response) {
+                const resultAction = await dispatch(
+                    createOrder({
+                        amount: razorpayOrder.amount / 100,
+                        currency: razorpayOrder.currency,
+                        products: cartItems,
+                        isGuest: !isAuthenticated,
+                        shippingAddress: {
+                            address: shippingAddress.address,
+                            city: shippingAddress.city,
+                            postalCode:
+                                shippingAddress.pincode ||
+                                shippingAddress.postalCode,
+                            country: shippingAddress.country,
+                        },
+                        paymentInfo: {
+                            id: response.razorpay_payment_id,
+                            order_id: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            method: "razorpay",
+                            status: "paid",
+                        },
+                    })
+                );
+
+                if (createOrder.fulfilled.match(resultAction)) {
+                    toast.success(
                         "Payment successful: " + response.razorpay_payment_id
                     );
                     dispatch(setPaymentStatus("success"));
-                    dispatch(emptyCart());
-                },
-                prefill: {
-                    name: user?.name || "",
-                    email: user?.email || "",
-                    contact: user?.phone || "",
-                },
-                theme: {
-                    color: "#3399cc",
-                },
-            };
+                    handleEmptyCart();
+                } else {
+                    toast.error(
+                        "Order creation failed after payment. Please contact support."
+                    );
+                }
+            },
+            prefill: {
+                name: user?.name || "",
+                email: user?.email || "",
+                contact: user?.phone || "",
+            },
+            theme: {
+                color: "#3399cc",
+            },
+        };
 
-            const rzp = new window.Razorpay(options);
-            rzp.open();
+        const rzp = new window.Razorpay(options);
+        rzp.open();
 
-            rzp.on("payment.failed", function (response) {
-                alert("Payment failed: " + response.error.description);
-                dispatch(setPaymentStatus("failed"));
-            });
-        } else {
-            alert("Failed to create order. Try again later.");
-        }
+        rzp.on("payment.failed", function (response) {
+            toast.error("Payment failed: " + response.error.description);
+            dispatch(setPaymentStatus("failed"));
+        });
     };
+
     const [promoCode, setPromoCode] = useState("");
     const [shippingCost, setShippingCost] = useState(5);
 
-    const handleQuantityChange = (item, newQuantity) => {
+    const handleQuantityChange = async (item, newQuantity) => {
         if (newQuantity < 1) return;
-
-        dispatch(
-            addOrUpdateCartItem({
-                product: item?.product,
-                quantity: newQuantity,
-            })
-        ).then(() => dispatch(fetchCart()));
+        if (newQuantity >= item?.product?.inventory) {
+            toast.info("Cannot add more than available stock");
+            return;
+        }
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(
+                    addOrUpdateCartItem({
+                        product: item?.product,
+                        quantity: newQuantity,
+                    })
+                );
+                if (addOrUpdateCartItem.rejected.match(resultAction)) {
+                    toast.error("Failed to update cart");
+                } else {
+                    dispatch(fetchCart());
+                }
+            } catch {
+                toast.error("An error occurred while updating the cart");
+            }
+        } else {
+            dispatch(
+                guestAddOrUpdateCartItem({
+                    product: item?.product,
+                    quantity: newQuantity,
+                })
+            );
+        }
     };
 
-    const handleRemove = (item) => {
+    const handleRemove = async (item) => {
         const productId = item.product?._id;
-        dispatch(removeCartItem(productId));
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(removeCartItem(productId));
+                if (removeCartItem.rejected.match(resultAction)) {
+                    toast.error("Failed to remove item");
+                }
+            } catch {
+                toast.error("An error occurred while removing the item");
+            }
+        } else {
+            dispatch(guestRemoveCartItem(productId));
+        }
+    };
+
+    const handleEmptyCart = async () => {
+        if (isAuthenticated) {
+            try {
+                const resultAction = await dispatch(emptyCart());
+                if (emptyCart.rejected.match(resultAction)) {
+                    toast.error("Failed to empty cart");
+                }
+            } catch {
+                toast.error("An error occurred while emptying the cart");
+            }
+        } else {
+            dispatch(guestClearCart());
+        }
     };
     const handleCheckout = () => setAddressOpen(true);
 
     const handleAddressSelect = (addressId) => {
-        setSelectedAddressId(addressId);
+        const addressList = isAuthenticated ? addresses : getGuestAddresses();
+        const selectedAddress = addressList.find(
+            (addr) => addr._id === addressId
+        );
+        setSelectedAddress(selectedAddress);
         setAddressOpen(false);
-        openRazorpayCheckout();
+        openRazorpayCheckout(selectedAddress);
     };
+
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
     return (
@@ -209,7 +301,9 @@ const Cart = () => {
                                                     variant="body2"
                                                     color="text.secondary"
                                                 >
-                                                    ${item.price?.toFixed(2)}
+                                                    $
+                                                    {item.price ||
+                                                        item?.product?.price}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -250,12 +344,19 @@ const Cart = () => {
                                                 </Box>
                                             </TableCell>
                                             <TableCell align="right">
-                                                ${item.price?.toFixed(2)}
+                                                $
+                                                {item.price?.toFixed(2) ||
+                                                    item?.product?.price?.toFixed(
+                                                        2
+                                                    )}
                                             </TableCell>
                                             <TableCell align="right">
                                                 $
                                                 {(
-                                                    item.price * item.quantity
+                                                    Number(
+                                                        item.price ||
+                                                            item?.product?.price
+                                                    ) * Number(item.quantity)
                                                 ).toFixed(2)}
                                             </TableCell>
                                             <TableCell align="center">

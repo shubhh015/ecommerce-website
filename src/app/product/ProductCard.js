@@ -37,6 +37,10 @@ const ProductCard = ({ product }) => {
     const isActive = product?.isActive ?? true;
 
     const handleAddToCart = async () => {
+        if (quantity >= product.inventory) {
+            toast.info("Cannot add more than available stock");
+            return;
+        }
         if (isAuthenticated) {
             try {
                 const resultAction = await dispatch(
@@ -48,7 +52,6 @@ const ProductCard = ({ product }) => {
                 if (addOrUpdateCartItem.rejected.match(resultAction)) {
                     toast.error("Failed to add to cart");
                 } else {
-                    toast.success("Added to cart!");
                     dispatch(fetchCart());
                 }
             } catch (error) {
@@ -61,7 +64,6 @@ const ProductCard = ({ product }) => {
                     quantity: quantity + 1,
                 })
             );
-            toast.success("Added to cart!");
         }
     };
 
@@ -102,7 +104,6 @@ const ProductCard = ({ product }) => {
                         quantity: quantity - 1,
                     })
                 );
-                toast.info("Updated cart quantity");
             } else if (quantity === 1) {
                 dispatch(guestRemoveCartItem(product._id));
                 toast.success("Removed from cart");
@@ -111,19 +112,23 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <Card
-            sx={{ maxWidth: 345, margin: 2 }}
-            onClick={() => navigate(`/products/${product._id}`)}
-        >
+        <Card sx={{ maxWidth: 345, margin: 2 }}>
             <CardMedia
                 component="img"
                 height="200"
                 image={product?.image?.url}
                 alt={product?.image?.alt}
-                sx={{ objectFit: "cover" }}
+                sx={{ objectFit: "cover", cursor: "pointer" }}
+                onClick={() => navigate(`/products/${product._id}`)}
             />
             <CardContent>
-                <Typography variant="h6" fontWeight={600} component="div">
+                <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    component="div"
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/products/${product._id}`)}
+                >
                     {product?.name}
                 </Typography>
                 <Box
@@ -145,7 +150,10 @@ const ProductCard = ({ product }) => {
                         </Typography>
                     ) : quantity === 0 ? (
                         <IconButton
-                            onClick={handleAddToCart}
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                await handleAddToCart();
+                            }}
                             color="primary"
                             sx={{
                                 bgcolor: "#E1E1E1",
