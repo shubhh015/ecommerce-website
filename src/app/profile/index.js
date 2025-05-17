@@ -16,7 +16,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -85,6 +85,13 @@ const ProfilePage = () => {
                                 startIcon={<EditIcon />}
                             >
                                 Edit Profile
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={() => setPasswordOpen(true)}
+                            >
+                                Change Password
                             </Button>
                             <Button
                                 variant="contained"
@@ -224,13 +231,7 @@ const ProfilePage = () => {
                     )}
                 </Paper>
             )}
-            <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setPasswordOpen(true)}
-            >
-                Change Password
-            </Button>
+
             <ChangePasswordModal
                 open={passwordOpen}
                 onClose={() => setPasswordOpen(false)}
