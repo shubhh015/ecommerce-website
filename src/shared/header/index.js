@@ -95,7 +95,7 @@ const Header = () => {
                 );
             }
         };
-        if (isAuthenticated) {
+        if (isAuthenticated && user?.role !== ROLE.ADMIN) {
             loadCart();
         }
     }, [dispatch]);
@@ -241,7 +241,6 @@ const Header = () => {
                             </IconButton>
                         </Link>
                     )}
-
 
                     {isAuthenticated && (
                         <IconButton
