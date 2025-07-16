@@ -14,12 +14,12 @@ function App() {
                     sx={{
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: "120vh",
+                        minHeight: "100vh",
                     }}
-                >
+                >                                                                                                 
                     <CssBaseline />
                     <Header />
-                    <Box sx={{ flexGrow: 2 }}>
+                    <Box sx={{ flexGrow: 1 }}>
                         <AppRoutes />
                     </Box>
                     <Footer />
