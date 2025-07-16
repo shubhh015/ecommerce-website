@@ -7,7 +7,7 @@ import React from "react";
 
 const ratings = [
     { title: "Quality", value: 4.9 },
-    { title: "Customer Satisfaction", value: 4.8 },
+    { title: "Customer Satisfaction", value: 4.6 },
 ];
 
 const DedicationSection = () => {

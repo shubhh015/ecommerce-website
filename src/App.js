@@ -14,7 +14,7 @@ function App() {
                     sx={{
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: "110vh",
+                        minHeight: "100vh",
                     }}
                 >
                     <CssBaseline />
